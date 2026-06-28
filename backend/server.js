@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { registerUser, authenticateUser } from "./users.js";
 import { loadNotebooks, saveNotebooks } from "./notebooks.js";
+import { usingRedis } from "./persist.js";
 
 dotenv.config();
 
@@ -140,7 +141,7 @@ app.put("/api/notebooks", async (req, res) => {
       return res.status(400).json({ error: "notebooks object is required" });
     }
     const saved = await saveNotebooks(user.uid, notebooks);
-    res.json({ ok: true, updatedAt: saved.updatedAt });
+    res.json({ ok: true, updatedAt: saved.updatedAt, notebooks: saved.notebooks });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -218,7 +219,7 @@ function buildSourcesBlock(sources) {
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
-app.get("/api/health", (_req, res) => res.json({ status: "ok", model: DEFAULT_MODEL, time: Date.now() }));
+app.get("/api/health", (_req, res) => res.json({ status: "ok", model: DEFAULT_MODEL, time: Date.now(), redis: usingRedis() }));
 
 // ─── Chat (with SSE streaming support) ───────────────────────────────────────
 

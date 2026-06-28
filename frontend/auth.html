@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="config.js"></script>
+  <script src="sync.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -518,6 +519,21 @@ function saveAuth(token, user) {
   localStorage.setItem('sa_auth', JSON.stringify({ token, user }));
 }
 
+async function redirectAfterAuth(token, user, okId, okMsg) {
+  saveAuth(token, user);
+  showOk(okId, okMsg + ' Syncing notebooks…');
+  try {
+    await window.VSA_SYNC.syncAccountNotebooks({
+      token,
+      uid: user.uid,
+      storageKey: `sa_notebooks_v2_${user.uid}`,
+    });
+  } catch (e) {
+    console.error('Auth notebook sync failed:', e);
+  }
+  location.replace('index.html');
+}
+
 async function doSignIn() {
   hideErr('signin-error');
   const email = document.getElementById('signin-email').value.trim();
@@ -539,9 +555,7 @@ async function doSignIn() {
       }
       return;
     }
-    saveAuth(data.token, data.user);
-    showOk('signin-success', `Welcome back, ${data.user.username}! Redirecting…`);
-    setTimeout(() => location.replace('index.html'), 900);
+    await redirectAfterAuth(data.token, data.user, 'signin-success', `Welcome back, ${data.user.username}!`);
   } catch (e) { showErr('signin-error', 'Network error — is the server running?'); }
   finally { setLoading('signin-btn', false); }
 }
@@ -561,9 +575,7 @@ async function doSignUp() {
     });
     const data = await res.json();
     if (!res.ok) { showErr('signup-error', data.error || 'Sign up failed'); return; }
-    saveAuth(data.token, data.user);
-    showOk('signup-success', `Account created! Welcome, ${data.user.username}! Redirecting…`);
-    setTimeout(() => location.replace('index.html'), 900);
+    await redirectAfterAuth(data.token, data.user, 'signup-success', `Account created! Welcome, ${data.user.username}!`);
   } catch (e) { showErr('signup-error', 'Network error — is the server running?'); }
   finally { setLoading('signup-btn', false); }
 }
@@ -585,7 +597,14 @@ async function doMentorSignIn() {
     const data = await res.json();
     if (!res.ok) { showErr('mentor-error', data.error || 'Authentication failed'); return; }
     saveAuth(data.token, data.user);
-    setTimeout(() => location.replace('index.html'), 600);
+    try {
+      await window.VSA_SYNC.syncAccountNotebooks({
+        token: data.token,
+        uid: data.user.uid,
+        storageKey: `sa_notebooks_v2_${data.user.uid}`,
+      });
+    } catch (e) { console.error('Mentor notebook sync failed:', e); }
+    location.replace('index.html');
   } catch (e) { showErr('mentor-error', 'Network error'); }
   finally { setLoading('mentor-btn', false); }
 }

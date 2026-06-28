@@ -81,11 +81,21 @@ const state = {
   currentAudio:     null,
 };
 
-// ─── Storage helpers ──────────────────────────────────────────────
+// ─── Storage helpers (server merge via sync.js) ───────────────────
+const { mergeNotebooks, notebooksEqual, touchNotebook } = window.VSA_SYNC;
+
 let _serverSyncTimer = null;
 let _notebooksUpdatedAt = 0;
+let _syncInFlight = null;
+
+function touchActiveNotebook() {
+  if (state.activeNotebookId && state.notebooks[state.activeNotebookId]) {
+    touchNotebook(state.notebooks[state.activeNotebookId]);
+  }
+}
 
 function saveNotebooks() {
+  touchActiveNotebook();
   try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(state.notebooks)); }
   catch (e) {
     for (const nb of Object.values(state.notebooks)) {
@@ -97,41 +107,48 @@ function saveNotebooks() {
 }
 
 async function fetchServerNotebooks() {
-  try {
-    const res = await fetch(`${API}/api/notebooks`, { headers: getAuthHeaders() });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.notebooks || typeof data.notebooks !== "object") return null;
-    return {
-      notebooks: data.notebooks,
-      updatedAt: Number(data.updatedAt) || 0,
-    };
-  } catch {
-    return null;
-  }
+  if (!authToken) return { notebooks: {}, updatedAt: 0 };
+  return window.VSA_SYNC.fetchServerNotebooks(authToken);
 }
 
 function scheduleServerNotebookSync() {
   if (!authToken || !currentUser?.uid) return;
   clearTimeout(_serverSyncTimer);
-  _serverSyncTimer = setTimeout(syncNotebooksToServer, 700);
+  _serverSyncTimer = setTimeout(() => { syncNotebooksToServer(); }, 700);
 }
 
 async function syncNotebooksToServer() {
   if (!authToken || !currentUser?.uid) return;
-  try {
-    const res = await fetch(`${API}/api/notebooks`, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ notebooks: state.notebooks }),
-    });
-    if (res.ok) {
-      const data = await res.json();
+  if (_syncInFlight) return _syncInFlight;
+  _syncInFlight = (async () => {
+    try {
+      const data = await window.VSA_SYNC.putServerNotebooks(authToken, state.notebooks);
       _notebooksUpdatedAt = Number(data.updatedAt) || Date.now();
-      localStorage.setItem(`${NB_STORAGE_KEY}_updatedAt`, String(_notebooksUpdatedAt));
+      if (data.notebooks && typeof data.notebooks === "object") {
+        state.notebooks = data.notebooks;
+        localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(data.notebooks));
+      }
+    } catch (e) {
+      toast("Sync failed — changes may not appear on other devices");
+      console.error("Notebook sync failed:", e);
+    } finally {
+      _syncInFlight = null;
     }
-  } catch {}
+  })();
+  return _syncInFlight;
 }
+
+function flushServerNotebookSync() {
+  clearTimeout(_serverSyncTimer);
+  if (!authToken || !currentUser?.uid) return;
+  fetch(`${API}/api/notebooks`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ notebooks: state.notebooks }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 function loadNotebooks() {
   try { const r = localStorage.getItem(NB_STORAGE_KEY); if (r) return JSON.parse(r); }
   catch {}
@@ -200,50 +217,59 @@ function applyNotebookState(saved) {
 }
 
 async function initNotebooks() {
-  const local = loadNotebooks();
-  const localUpdatedAt = Number(localStorage.getItem(`${NB_STORAGE_KEY}_updatedAt`)) || 0;
+  setStatus("Syncing notebooks…");
+  const local = loadNotebooks() || {};
   const remote = await fetchServerNotebooks();
+  const remoteNotebooks = remote?.notebooks || {};
 
-  let saved = null;
-  if (remote && Object.keys(remote.notebooks).length > 0) {
-    if (!local || Object.keys(local).length === 0 || remote.updatedAt >= localUpdatedAt) {
-      saved = remote.notebooks;
-      _notebooksUpdatedAt = remote.updatedAt;
-      localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(saved));
-      localStorage.setItem(`${NB_STORAGE_KEY}_updatedAt`, String(remote.updatedAt));
-    } else {
-      saved = local;
-      scheduleServerNotebookSync();
-    }
-  } else if (local && Object.keys(local).length > 0) {
-    saved = local;
-    scheduleServerNotebookSync();
-  }
-
-  if (saved && Object.keys(saved).length > 0) {
-    applyNotebookState(saved);
-    return;
-  }
+  let merged = mergeNotebooks(local, remoteNotebooks);
 
   const migrated = migrateOldData();
   if (migrated?.all) {
-    applyNotebookState(migrated.all);
-    saveNotebooks();
-    return;
+    merged = mergeNotebooks(merged, migrated.all);
+  } else if (migrated && Object.keys(merged).length === 0) {
+    const id = "nb_" + makeId();
+    const n = { ...migrated, id, studioOutputs: migrated.studioOutputs || [] };
+    merged = { [id]: n };
   }
 
-  const id = "nb_" + makeId();
-  const n  = migrated || { id, name: "My Notebook", emoji: "📓", sources: [], chats: [], notes: [], studioOutputs: [] };
-  n.id = id;
-  state.notebooks[id] = n;
-  state.activeNotebookId = id;
-  saveNotebooks();
+  if (Object.keys(merged).length === 0) {
+    const id = "nb_" + makeId();
+    merged[id] = {
+      id, name: "My Notebook", emoji: "📓",
+      sources: [], chats: [], notes: [], studioOutputs: [],
+      updatedAt: Date.now(),
+    };
+  }
+
+  state.notebooks = merged;
+  localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(merged));
+  _notebooksUpdatedAt = remote.updatedAt || 0;
+
+  const needsUpload = !notebooksEqual(merged, remoteNotebooks);
+  if (needsUpload) {
+    try {
+      const data = await window.VSA_SYNC.putServerNotebooks(authToken, merged);
+      _notebooksUpdatedAt = Number(data.updatedAt) || Date.now();
+      if (data.notebooks && typeof data.notebooks === "object") {
+        state.notebooks = data.notebooks;
+        localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(data.notebooks));
+      }
+      toast("Notebooks synced");
+    } catch (e) {
+      toast("Sync failed — open the profile with your sources and refresh");
+      console.error("Initial notebook sync failed:", e);
+    }
+  }
+
   applyNotebookState(state.notebooks);
+  setStatus("");
 }
 
 function createNotebook(name = "New Notebook") {
   const id = "nb_" + makeId();
-  state.notebooks[id] = { id, name, emoji: "📓", sources: [], chats: [], notes: [], studioOutputs: [] };
+  const n = { id, name, emoji: "📓", sources: [], chats: [], notes: [], studioOutputs: [], updatedAt: Date.now() };
+  state.notebooks[id] = n;
   saveNotebooks();
   return id;
 }
@@ -2907,6 +2933,12 @@ function initEvents() {
       $("resources-modal").classList.add("hidden");
     }
   });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushServerNotebookSync();
+  });
+  window.addEventListener("pagehide", () => flushServerNotebookSync());
+  window.addEventListener("beforeunload", () => flushServerNotebookSync());
 }
 
 // ─── Init ────────────────────────────────────────────────────────

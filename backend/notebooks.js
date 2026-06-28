@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import { readJson, writeJson } from "./persist.js";
+import { mergeNotebooks } from "./merge-notebooks.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, "data", "notebooks");
@@ -31,8 +32,10 @@ export async function loadNotebooks(uid) {
 }
 
 export async function saveNotebooks(uid, notebooks) {
+  const existing = await loadNotebooks(uid);
+  const merged = mergeNotebooks(existing.notebooks, notebooks);
   const payload = {
-    notebooks: notebooks && typeof notebooks === "object" ? notebooks : {},
+    notebooks: merged,
     updatedAt: Date.now(),
   };
   await writeJson(notebookKey(uid), payload, notebookPath(uid));
