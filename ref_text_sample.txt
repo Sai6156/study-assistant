@@ -1,0 +1,326 @@
+[0|s=|a=center|img=False] Jawaharlal Nehru Technological University, Hyderabad
+[1|s=|a=center|img=False] Kakatiya Institute of Technology and Sciences, Warangal
+[3|s=|a=center|img=False] A Major Project Report
+[4|s=|a=center|img=False] on
+[5|s=|a=center|img=False] "Smart Agriculture Monitoring and Crop Disease Detection System (with Dataset)"
+[6|s=|a=center|img=False] (SmartAgri — AI Powered Agriculture Platform)
+[8|s=|a=center|img=False] Submitted in partial fulfilment of the requirements
+[9|s=|a=center|img=False] for the award of the degree of
+[10|s=|a=center|img=False] BACHELOR OF TECHNOLOGY
+[11|s=|a=center|img=False] in
+[12|s=|a=center|img=False] COMPUTER SCIENCE AND ENGINEERING (AI & ML)
+[14|s=|a=center|img=False] Academic Year: 2025–26
+[16|s=|a=center|img=False] Submitted by
+[17|s=|a=center|img=False] Maram Sai Shashank Raj
+[18|s=|a=center|img=False] Roll No.: B24AI185
+[20|s=|a=center|img=False] Under the guidance of
+[21|s=|a=center|img=False] Prof. Maram Balajee
+[22|s=|a=center|img=False] Professor, Department of Computer Science and Engineering, SR University, Warangal
+[24|s=|a=center|img=False] Department of Computer Science and Engineering (AI & ML)
+[25|s=|a=center|img=False] Kakatiya Institute of Technology and Sciences, Warangal
+[26|s=|a=center|img=False] June 2026
+[28|s=2|a=|img=False] BONAFIDE CERTIFICATE
+[29|s=|a=|img=False] This is to certify that the Major Project Report entitled "Smart Agriculture Monitoring and Crop Disease Detection System (with Dataset)" submitted by Maram Sai Shashank Raj (Roll No.: B24AI185) in partial fulfilment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering (AI & ML) is a bonafide record of work carried out by him under my supervision and guidance.
+[30|s=|a=|img=False] The matter embodied in this report has not been submitted elsewhere for the award of any other degree or diploma.
+[31|s=|a=|img=False] Date: June 2026
+[32|s=|a=|img=False] Place: Warangal          Signature of the Guide          Prof. Maram BalajeeProfessor, Department of Computer Science and Engineering, SR University, Warangal
+[35|s=2|a=|img=False] TABLE OF CONTENTS
+[37|s=2|a=|img=False] PROJECT APPROVAL CERTIFICATE
+[38|s=|a=|img=False] The Major Project Report entitled "Smart Agriculture Monitoring and Crop Disease Detection System (with Dataset)" submitted by Maram Sai Shashank Raj has been examined and approved for submission.
+[40|s=|a=|img=False] Project Guide: Prof. Maram Balajee          Date: June 2026
+[41|s=|a=|img=False] Internal Examiner: _____________________          Date: __________
+[42|s=|a=|img=False] External Examiner: _____________________          Date: __________
+[44|s=2|a=|img=False] STUDENT DECLARATION
+[45|s=|a=|img=False] I, Maram Sai Shashank Raj, hereby declare that the Major Project Report entitled "Smart Agriculture Monitoring and Crop Disease Detection System (with Dataset)" submitted to Jawaharlal Nehru Technological University, Hyderabad through Kakatiya Institute of Technology and Sciences, Warangal in partial fulfilment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering (AI & ML) is an authentic record of my own work carried out under the supervision of Prof. Maram Balajee.
+[46|s=|a=|img=False] The matter embodied in this report has not been submitted by me for the award of any other degree or diploma. Wherever other works have been referred to, due acknowledgement has been made.
+[47|s=|a=|img=False] Date: June 2026
+[48|s=|a=|img=False] Place: Warangal
+[49|s=|a=|img=False] Signature of the Student: _________________________Maram Sai Shashank Raj
+[51|s=2|a=|img=False] SUPERVISOR CERTIFICATE
+[52|s=|a=|img=False] This is to certify that the project work titled "Smart Agriculture Monitoring and Crop Disease Detection System (with Dataset)" carried out by Maram Sai Shashank Raj (Roll No.: B24AI185) under my guidance is a record of bonafide work and has been completed to my satisfaction. The report is recommended for submission to Kakatiya Institute of Technology and Sciences, Warangal for evaluation.
+[53|s=|a=|img=False] Date: June 2026
+[54|s=|a=|img=False] Place: Warangal
+[55|s=|a=|img=False] Signature of Supervisor: _________________________Prof. Maram BalajeeProfessor, Department of Computer Science and Engineering, SR University, Warangal
+[57|s=2|a=|img=False] ACKNOWLEDGEMENT
+[58|s=|a=|img=False] I express my sincere gratitude to my project guide, Prof. Maram Balajee, Professor, Department of Computer Science and Engineering, SR University, Warangal, for invaluable guidance, continuous encouragement, and constructive feedback throughout the development of SmartAgri.
+[59|s=|a=|img=False] I thank the faculty members of Department of Computer Science and Engineering (AI & ML), Kakatiya Institute of Technology and Sciences, Warangal, for providing academic support and laboratory facilities.
+[60|s=|a=|img=False] I acknowledge OpenRouter, PlantNet, WeatherAPI, Mappls (MapmyIndia), Open-Meteo, PyTorch, Next.js, Vercel, Render, and the open-source community for tools and APIs that made this project feasible.
+[61|s=|a=|img=False] Finally, I thank my parents and friends for their moral support and motivation.
+[63|s=2|a=|img=False] ABSTRACT
+[64|s=|a=|img=False] Crop diseases cause significant yield losses for farmers worldwide, particularly in India where smallholders lack access to timely expert diagnosis. Traditional monitoring relies on visual inspection and extension officers, which is slow, costly, and unavailable in remote rural areas.
+[65|s=|a=|img=False] This project presents SmartAgri — an integrated Smart Agriculture Monitoring and Crop Disease Detection System deployed at https://frontend-next-sand-xi.vercel.app/. Farmers upload a single leaf photograph and optionally attach IoT sensor data (JSON/CSV) to receive: MobileNetV2 disease detection (97.1% accuracy on PlantVillage dataset with 38 classes), PlantNet species identification, location-aware weather monitoring, Gemma LLM crop advisory reports, disease risk forecasting, and a multilingual voice chatbot in 27 languages.
+[66|s=|a=|img=False] The CNN model was trained on the PlantVillage augmented dataset using transfer learning. The web application uses Next.js 16 frontend on Vercel and FastAPI backend on Render with SQLite prediction history and JWT authentication.
+[67|s=|a=|img=False] Keywords: Smart Agriculture, Crop Disease Detection, Deep Learning, MobileNetV2, PlantVillage Dataset, IoT Sensors, Convolutional Neural Network, FastAPI, Next.js, Artificial Intelligence.
+[69|s=2|a=|img=False] LIST OF FIGURES
+[70|s=|a=|img=False] Fig. 3.10  System Architecture Overview
+[71|s=|a=|img=False] Fig. 4.2  High-Level Architecture of Proposed System
+[72|s=|a=|img=False] Fig. 4.10  CNN Architecture (MobileNetV2)
+[73|s=|a=|img=False] Fig. 4.5  IoT Sensor Integration Diagram
+[74|s=|a=|img=False] Fig. 4.13  Data Flow Diagram – Level 0
+[75|s=|a=|img=False] Fig. 4.13  Data Flow Diagram – Level 1
+[76|s=|a=|img=False] Fig. 4.14  Use Case Diagram
+[77|s=|a=|img=False] Fig. 4.15  Sequence Diagram – Leaf Scan Pipeline
+[78|s=|a=|img=False] Fig. 4.16  Activity Diagram – Farmer Scan Session
+[79|s=|a=|img=False] Fig. 4.17  ER Diagram
+[80|s=|a=|img=False] Fig. 4.19  System Flowchart
+[81|s=|a=|img=False] Fig. 5.15a  Home Tab — Smart Leaf Analysis Dashboard
+[82|s=|a=|img=False] Fig. 5.15b  IoT Sensor Data Panel
+[83|s=|a=|img=False] Fig. 5.15c  AI Chatbot with Scan Context
+[84|s=|a=|img=False] Fig. 5.15d  Multilingual Telugu Voice Chat
+[85|s=|a=|img=False] Fig. 6.5  Confusion Matrix
+[86|s=|a=|img=False] Fig. 6.9  Training Accuracy and Loss Graphs
+[87|s=|a=|img=False] Fig. 6.10  Disease Detection Output Screenshots
+[89|s=2|a=|img=False] LIST OF TABLES
+[90|s=|a=|img=False] Table 2.8  Comparative Analysis of Existing Techniques
+[91|s=|a=|img=False] Table 3.5  Functional Requirements
+[92|s=|a=|img=False] Table 3.6  Non-Functional Requirements
+[93|s=|a=|img=False] Table 3.7  Hardware Requirements
+[94|s=|a=|img=False] Table 3.8  Software Requirements
+[95|s=|a=|img=False] Table 5.4  Dataset Classes and Categories
+[96|s=|a=|img=False] Table 5.9  Tools and Technologies Used
+[97|s=|a=|img=False] Table 6.2  Performance Evaluation Metrics
+[98|s=|a=|img=False] Table 6.3  Accuracy Analysis Results
+[99|s=|a=|img=False] Table 6.4  Precision, Recall, and F1-Score Summary
+[100|s=|a=|img=False] Table 6.4b  Selected Per-Class Metrics
+[101|s=|a=|img=False] Table 6.6  Disease Detection and System Test Results
+[102|s=|a=|img=False] Table 6.7  IoT Sensor Monitoring Results
+[103|s=|a=|img=False] Table 6.8  Comparative Analysis with Existing Methods
+[105|s=2|a=|img=False] LIST OF ABBREVIATIONS AND ACRONYMS
+[109|s=2|a=|img=False] CHAPTER 1
+[110|s=2|a=|img=False] INTRODUCTION
+[111|s=3|a=|img=False] 1.1 Introduction to Smart Agriculture
+[112|s=|a=|img=False] Smart agriculture applies information and communication technologies to farming — including IoT sensors, satellite imagery, mobile applications, weather APIs, and artificial intelligence — to improve productivity, reduce crop losses, and enable data-driven decisions. In India, where agriculture employs nearly half the workforce and contributes significantly to GDP, timely disease diagnosis and weather-aware advisories can mean the difference between a profitable harvest and total crop failure.The Government of India's Digital India and National e-Governance initiatives encourage technology adoption in rural sectors. Smartphone penetration in Telangana villages now exceeds 70%, making browser-based agricultural tools accessible without dedicated hardware. SmartAgri leverages this trend by delivering expert-level disease screening through a single web link — no app store download required.
+[113|s=3|a=|img=False] 1.2 Role of Artificial Intelligence in Agriculture
+[114|s=|a=|img=False] Artificial intelligence transforms raw agricultural data into actionable knowledge. Convolutional neural networks (CNNs) learn visual patterns of leaf lesions, chlorosis, and fungal growth from labelled image datasets, achieving accuracy comparable to trained plant pathologists on benchmark corpora such as PlantVillage.Large language models (LLMs) extend CNN outputs with natural-language explanations, treatment schedules, and risk forecasts that consider weather and soil context. Speech-to-text and text-to-speech pipelines remove literacy barriers — a Telugu-speaking farmer can ask why Late Blight occurred and hear the answer in their own language. SmartAgri combines all three AI paradigms — computer vision, NLP, and voice — in one integrated platform.
+[115|s=3|a=|img=False] 1.3 Importance of Crop Disease Detection
+[116|s=|a=|img=False] Crop diseases cause an estimated 20–40% yield loss globally. In India, fungal diseases such as Tomato Late Blight and Rice Blast spread rapidly under humid monsoon conditions, destroying entire fields within days if untreated. Early identification allows targeted fungicide application, reducing chemical overuse and environmental contamination.Visual symptoms on leaves — water-soaked lesions, yellow halos, powdery mildew coatings — are the primary diagnostic indicators accessible to farmers in the field. Automated CNN classifiers trained on thousands of labelled images can screen a leaf photograph in seconds, flagging the most probable disease before extension officers arrive. This project targets 38 disease categories across 14 economically important crops.
+[117|s=3|a=|img=False] 1.4 Need for Smart Monitoring Systems
+[118|s=|a=|img=False] Existing solutions address individual problems in isolation: weather apps show temperature but not disease risk; disease apps classify leaves but ignore soil moisture; IoT dashboards display sensor graphs without linking them to crop health. Farmers must switch between five or more tools, manually correlating outputs.An integrated smart monitoring system unifies disease CNN inference, optional IoT sensor correlation, location-aware weather alerts, LLM-generated crop reports, and multilingual voice advisory in a single automated pipeline triggered by one leaf upload. SmartAgri was designed specifically to fill this integration gap.
+[119|s=3|a=|img=False] 1.5 Problem Statement
+[120|s=|a=|img=False] Despite advances in agricultural AI research, Indian smallholder farmers lack access to an affordable, deployable system that simultaneously provides: (1) deep learning disease detection with ≥97% benchmark accuracy; (2) optional IoT sensor data integration for soil and weather correlation; (3) location-aware weather and farming alerts; (4) LLM-generated crop advisory reports downloadable as PDF; (5) multilingual voice chatbot with scan context; and (6) a one-upload automated five-step analysis pipeline requiring zero local software installation.The problem addressed by this project is the absence of such a unified, cloud-hosted, browser-accessible smart agriculture platform tailored to Indian conditions — particularly Telangana — with production deployment evidence and documented methodology.
+[121|s=3|a=|img=False] 1.6 Motivation for the Project
+[122|s=|a=|img=False] Farmers in Warangal district frequently travel 20–30 km to agricultural extension offices for disease identification, losing critical treatment days. College-level B.Tech projects often remain proof-of-concept notebooks without live deployment. This project was motivated to bridge that gap: train a CNN on the public PlantVillage dataset, wrap it in a professional Next.js interface, deploy on free-tier Vercel and Render cloud, and validate with real field images and Telugu voice interaction.Personal motivation included applying AI & ML coursework — transfer learning, REST APIs, React frontends — to a socially impactful domain where 97.1% classification accuracy directly helps farmers make smarter spraying and irrigation decisions.
+[123|s=3|a=|img=False] 1.7 Objectives of the Proposed System
+[124|s=23|a=|img=False] Train MobileNetV2 CNN achieving ≥97% accuracy on PlantVillage (38 disease classes).
+[125|s=23|a=|img=False] Build three-tab web dashboard: Home, History & Stats, AI Chatbot.
+[126|s=23|a=|img=False] Implement 5-step automated scan pipeline from single leaf upload.
+[127|s=23|a=|img=False] Integrate optional IoT sensor data into reports, risk forecast, and chatbot.
+[128|s=23|a=|img=False] Deploy production system on Vercel and Render with JWT authentication.
+[129|s=23|a=|img=False] Support 27 languages with voice STT/TTS for farming queries.
+[130|s=3|a=|img=False] 1.8 Scope of the Project
+[131|s=|a=|img=False] In scope: CNN training and evaluation on PlantVillage (38 classes, 14 crops); Next.js 16 web frontend with three-tab dashboard; FastAPI backend with JWT authentication; PlantNet, WeatherAPI, Mappls, and OpenRouter Gemma integration; optional IoT JSON upload (iotinfo.json schema); PDF crop report export; 27-language voice chatbot; SQLite prediction history; Vercel + Render production deployment.Out of scope: native Android/iOS apps; live MQTT sensor streaming; custom hardware fabrication; drone-based multispectral imaging; and government subsidy integration. Physical Arduino/ESP32 sensors are simulated via JSON upload to validate the data model before hardware rollout.
+[132|s=3|a=|img=False] 1.9 Applications of Smart Agriculture Systems
+[133|s=23|a=|img=False] Small farmer field diagnosis
+[134|s=23|a=|img=False] Agricultural extension support
+[135|s=23|a=|img=False] College smart-agri demos
+[136|s=23|a=|img=False] Agri-startup MVP
+[137|s=23|a=|img=False] Multilingual farmer education
+[138|s=3|a=|img=False] 1.10 Advantages of the Proposed System
+[139|s=23|a=|img=False] 97.1% CNN accuracy on benchmark dataset
+[140|s=23|a=|img=False] Single-upload full pipeline
+[141|s=23|a=|img=False] IoT data optional integration
+[142|s=23|a=|img=False] India-optimized geocoding
+[143|s=23|a=|img=False] Free cloud deployment
+[144|s=23|a=|img=False] PDF professional reports
+[145|s=3|a=|img=False] 1.11 Challenges in Crop Disease Detection
+[146|s=|a=|img=False] Real-world deployment faces several challenges. PlantVillage images use uniform studio backgrounds, while field photos include soil, shadows, and blurred backgrounds — creating a domain gap that may reduce confidence on non-ideal captures. Render free-tier cold starts add 30–60 seconds on first API call after idle periods. LLM features depend on OpenRouter API availability. Low-literacy users are addressed through Telugu/Hindi voice, but dialect variation remains a research frontier.Lighting variation, partial leaf occlusion, and multi-disease co-infection on a single leaf are additional challenges documented in literature and observed during field testing with Tomato Late Blight samples.
+[147|s=3|a=|img=False] 1.12 Organization of the Report
+[148|s=|a=|img=False] Chapter 2 reviews traditional monitoring, IoT agriculture, CNN disease detection literature, and comparative systems (Table 2.8). Chapter 3 analyses functional and non-functional requirements. Chapter 4 presents the complete A-to-Z development methodology with architecture and UML diagrams. Chapter 5 describes the PlantVillage dataset, training procedure, and implementation modules. Chapter 6 reports experimental results with tables, confusion matrix, and training curves. Chapter 7 concludes with achievements and future enhancements including MQTT live IoT and TFLite mobile deployment.
+[150|s=2|a=|img=False] CHAPTER 2
+[151|s=2|a=|img=False] LITERATURE SURVEY
+[152|s=3|a=|img=False] 2.1 Introduction
+[153|s=|a=|img=False] This chapter surveys the evolution of agricultural monitoring from manual field inspection to AI-powered cloud platforms. We review peer-reviewed work on IoT smart farming, CNN-based plant pathology, image preprocessing pipelines, and commercial systems such as Plantix. The survey identifies integration gaps that motivate the SmartAgri architecture presented in later chapters.
+[154|s=3|a=|img=False] 2.2 Traditional Farming Monitoring Methods
+[155|s=|a=|img=False] For centuries, disease diagnosis relied on farmer experience, printed pictorial charts, and periodic visits by agricultural extension officers. Karnataka and Telangana state departments distribute crop calendars and disease pamphlets in Telugu, but these are static — they cannot analyse a specific leaf photograph.Manual methods suffer from subjectivity (two officers may disagree), delay (officer visits occur weekly or monthly), and geographic inequality (remote villages receive fewer visits). During the 2023 tomato price crisis in Telangana, delayed Late Blight identification was cited as a contributing factor to crop loss. Automated CNN screening addresses speed and consistency, though it complements rather than replaces extension officers.
+[156|s=3|a=|img=False] 2.3 IoT-Based Smart Agriculture Systems
+[157|s=|a=|img=False] IoT agriculture deploys soil moisture probes, DHT22 temperature/humidity sensors, pH meters, and NPK analysers connected to Arduino, ESP32, or Raspberry Pi gateways. Data streams to cloud dashboards — ThingSpeak, Blynk, Firebase — where threshold rules trigger irrigation valves or SMS alerts.Research by Garcia et al. and others demonstrates soil moisture-driven irrigation can reduce water usage by 30%. However, most IoT platforms display raw sensor graphs without correlating readings to disease risk. SmartAgri accepts the same sensor data as structured JSON (farm, soil, weather, irrigation blocks) and injects summaries into Gemma LLM prompts alongside CNN disease output — a novel correlation absent in mainstream IoT dashboards.
+[158|s=3|a=|img=False] 2.4 Deep Learning Approaches for Crop Disease Detection
+[159|s=|a=|img=False] Deep CNNs automatically learn hierarchical features from labelled leaf images, eliminating hand-crafted colour histograms and GLCM texture descriptors used in pre-2015 literature. Mohanty et al. (2016) achieved 99.35% on PlantVillage using AlexNet and GoogLeNet, establishing the dataset as a standard benchmark.Subsequent work applied ResNet, VGG, DenseNet, and EfficientNet architectures. Transfer learning — fine-tuning ImageNet-pretrained weights on plant disease data — consistently outperforms training from scratch with limited samples. SmartAgri adopts MobileNetV2 for its favourable accuracy-to-parameter ratio, enabling CPU inference on Render without GPU costs.
+[160|s=3|a=|img=False] 2.5 Image Processing Techniques in Agriculture
+[161|s=|a=|img=False] Standard preprocessing resizes images to 224×224 (MobileNetV2 input), converts to RGB tensor, and normalises with ImageNet mean/std. Training augmentation — horizontal flip, ±25° rotation, colour jitter — improves field-photo robustness. Some researchers apply background removal (GrabCut) or leaf segmentation before classification; SmartAgri uses simpler resize-normalise for latency reasons.Softmax over 38 logits produces class probabilities; top-5 reporting helps users when confidence is ambiguous between Early and Late blight — a common confusion pair in literature and in our confusion matrix.
+[162|s=3|a=|img=False] 2.6 CNN Models for Plant Disease Classification
+[163|s=|a=|img=False] MobileNetV2 (Sandler et al., 2018) uses inverted residuals and linear bottlenecks, achieving ImageNet accuracy with 3.4M parameters — 8× smaller than ResNet-50. This suits cloud CPU deployment where GPU instances are cost-prohibitive for student projects.Comparative studies on PlantVillage report MobileNetV2 reaching 96–98% accuracy with 10–20 training epochs. Our implementation adds a two-layer classifier head (1280→512→38) with dropout regularisation, reaching 97.09% validation accuracy — consistent with published benchmarks.
+[164|s=3|a=|img=False] 2.7 Sensor-Based Agricultural Monitoring Systems
+[165|s=|a=|img=False] Soil moisture below 35% volumetric water content typically triggers irrigation in drip systems. pH outside 6.0–7.0 range limits nutrient uptake. NPK sensors guide fertiliser application, reducing over-fertilisation runoff.SmartAgri maps iotinfo.json fields — soil_moisture_percent, soil_ph, nitrogen_ppm, humidity_percent — into LLM context strings. When soil moisture reads 42% alongside Tomato Late Blight detection, Gemma recommends balanced irrigation without over-watering (which worsens fungal spread). This sensor-disease correlation is the key differentiator from pure image-classification apps.
+[166|s=3|a=|img=False] 2.8 Comparative Analysis of Existing Techniques
+[167|s=|a=|img=False] Table 2.8 compares SmartAgri against representative systems across six capability dimensions. Only the proposed system achieves full marks on CNN accuracy, IoT integration, weather, LLM advisory, and multilingual voice — confirming the integration gap identified in Section 2.9.
+[168|s=|a=center|img=False] Table 2.8 — Comparative Analysis of Existing Techniques
+[170|s=3|a=|img=False] 2.9 Research Gaps Identified
+[171|s=|a=|img=False] Literature and market analysis reveal four gaps: (1) no open-source platform combines CNN + LLM + weather + IoT in one upload pipeline; (2) few systems offer Telugu voice with scan context; (3) PlantVillage demos lack production auth, history, and PDF reports; (4) IoT dashboards lack disease-aware advisory. SmartAgri addresses all four with documented deployment at https://frontend-next-sand-xi.vercel.app/.
+[172|s=3|a=|img=False] 2.10 Summary of Literature Survey
+[173|s=|a=|img=False] Published research confirms CNN feasibility for plant disease detection (97%+ on PlantVillage) and IoT feasibility for soil/weather monitoring. Commercial apps solve subsets of the problem. The literature gap — integrated, deployable, multilingual, IoT-aware smart agriculture — is the contribution space for this B.Tech project, substantiated by Table 2.8 and validated in Chapter 6.
+[175|s=2|a=|img=False] CHAPTER 3
+[176|s=2|a=|img=False] SYSTEM ANALYSIS
+[177|s=3|a=|img=False] 3.1 Existing System
+[178|s=|a=|img=False] Farmers use separate tools: paper disease charts, WhatsApp extension groups, generic weather apps, and manual record keeping without AI integration.
+[179|s=3|a=|img=False] 3.2 Limitations of Existing Systems
+[180|s=23|a=|img=False] Fragmented apps
+[181|s=23|a=|img=False] No automated pipeline
+[182|s=23|a=|img=False] No IoT-disease correlation
+[183|s=23|a=|img=False] Limited regional language support
+[184|s=23|a=|img=False] No persistent scan history
+[185|s=3|a=|img=False] 3.3 Proposed Smart Agriculture System
+[186|s=|a=|img=False] SmartAgri at https://frontend-next-sand-xi.vercel.app/ with API https://smartagri-backend-lu26.onrender.com. User signs up, sets location (GPS/city), optionally attaches IoT sensor JSON, uploads leaf image, receives 5-step automated analysis.
+[187|s=3|a=|img=False] 3.4 Feasibility Study
+[188|s=4|a=|img=False] 3.4.1 Technical Feasibility
+[189|s=|a=|img=False] Feasible using PyTorch MobileNetV2, FastAPI, Next.js, PlantNet, OpenRouter Gemma, and PlantVillage dataset — all proven technologies.
+[190|s=4|a=|img=False] 3.4.2 Economic Feasibility
+[191|s=|a=|img=False] Vercel and Render free tiers; OpenRouter Gemma free tier; Open-Meteo free weather. Suitable for academic deployment.
+[192|s=4|a=|img=False] 3.4.3 Operational Feasibility
+[193|s=|a=|img=False] Browser-only access on smartphone. No installation. Simple sign-up and one-click leaf upload.
+[194|s=3|a=|img=False] 3.5 Functional Requirements
+[195|s=|a=|img=False] Twelve functional requirements trace from farmer needs to implemented modules. Verification status appears in Table 6.6.
+[196|s=|a=center|img=False] Table 3.5 — Functional Requirements
+[198|s=3|a=|img=False] 3.6 Non-Functional Requirements
+[199|s=|a=|img=False] Quality attributes and measurable targets are listed in Table 3.6; outcomes are evaluated in Chapter 6.
+[200|s=|a=center|img=False] Table 3.6 — Non-Functional Requirements
+[202|s=3|a=|img=False] 3.7 Hardware Requirements
+[203|s=|a=center|img=False] Table 3.7 — Hardware Requirements
+[205|s=3|a=|img=False] 3.8 Software Requirements
+[206|s=|a=center|img=False] Table 3.8 — Software Requirements
+[208|s=3|a=|img=False] 3.9 Dataset Requirements
+[209|s=|a=|img=False] PlantVillage — New Plant Diseases Dataset (Augmented): 38 classes, 14 crops, train/validation split, 17,572 test samples. Sources: Kaggle, Penn State PlantVillage.
+[210|s=3|a=|img=False] 3.10 System Architecture Overview
+[211|s=|a=|img=False] SmartAgri follows a three-tier cloud architecture. The presentation tier (Next.js on Vercel) handles authentication, image upload, IoT JSON attachment, and multilingual voice UI. The application tier (FastAPI on Render) loads MobileNetV2 weights, orchestrates external APIs, and persists scan history in SQLite. The external tier supplies plant species ID (PlantNet), LLM reasoning (Gemma via OpenRouter), and location-aware weather (WeatherAPI, Open-Meteo, Mappls). Fig. 3.10 summarises how these tiers connect.
+[212|s=|a=center|img=True] 
+[213|s=|a=center|img=False] Fig. 3.10 — System Architecture Overview
+[215|s=|a=|img=False] The browser never talks to third-party APIs directly for inference; all model and LLM calls pass through the FastAPI layer, which keeps API keys server-side and returns a single consolidated JSON payload per scan.
+[217|s=2|a=|img=False] CHAPTER 4
+[218|s=2|a=|img=False] PROPOSED METHODOLOGY
+[219|s=3|a=|img=False] 4.1 Introduction
+[220|s=|a=|img=False] This chapter documents the complete methodology adopted to design, train, integrate, and deploy SmartAgri — from raw PlantVillage images to a production web application at https://frontend-next-sand-xi.vercel.app/. The work proceeded in thirteen ordered phases: (1) problem definition and literature survey, (2) dataset acquisition, (3) exploratory data analysis, (4) CNN training with transfer learning, (5) remedy database construction, (6) FastAPI backend scaffolding, (7) external API integration, (8) Next.js frontend development, (9) five-step automated scan pipeline, (10) IoT JSON ingestion, (11) multilingual voice chatbot, (12) end-to-end testing, and (13) cloud deployment on Vercel and Render. Each phase produced verifiable artefacts — trained weights, REST endpoints, UI components, and UML diagrams — that together form the system described below.
+[221|s=3|a=|img=False] 4.2 Architecture of the Proposed System
+[222|s=|a=|img=False] The project is organised as a monorepo with three primary folders. The folder frontend-next/ contains the Next.js 16 dashboard (HomeHub, HistoryStats, Chatbot tabs). The folder backend/ hosts FastAPI routes, the PyTorch predictor service, LLM prompt builders, and SQLite persistence. The folder notebooks/ holds training scripts (phase3_train.py) and evaluation outputs; model/best_model.pth stores the 97.1% accurate MobileNetV2 checkpoint used in production. Fig. 4.2 shows how a farmer's browser request flows through these components to Vercel-hosted UI and Render-hosted API at https://smartagri-backend-lu26.onrender.com.
+[223|s=|a=center|img=True] 
+[224|s=|a=center|img=False] Fig. 4.2 — High-Level Architecture
+[226|s=|a=|img=False] Separating frontend and backend allows independent scaling: the CNN can run on Render CPU while static assets are served globally from Vercel's CDN. The model file is bundled with the backend Docker image defined in render.yaml so cold starts load weights once per container.
+[227|s=4|a=|img=False] 4.2.1 End-to-End Development Phases
+[228|s=|a=|img=False] Phase 1 — Requirements & Literature: Studied PlantVillage benchmarks, Plantix, and extension-officer workflows. Defined functional requirements: single-image upload, top-5 predictions, remedy lookup, weather correlation, and PDF export.
+[229|s=|a=|img=False] Phase 2 — Dataset Acquisition: Downloaded New Plant Diseases Dataset (Augmented) from Kaggle. Verified 38 class folders under train/ and valid/ with 17,572 validation images for final testing.
+[230|s=|a=|img=False] Phase 3 — Exploratory Analysis: Counted samples per class, inspected image resolutions, and confirmed uniform leaf-on-background format suitable for MobileNetV2 input at 224×224.
+
+--- MIDDLE ---
+
+[121|s=3|a=|img=False] 1.6 Motivation for the Project
+[122|s=|a=|img=False] Farmers in Warangal district frequently travel 20–30 km to agricultural extension offices for disease identification, losing critical treatment days. College-level B.Tech projects often remain proof-of-concept notebooks without live deployment. This project was motivated to bridge that gap: train a CNN on the public PlantVillage dataset, wrap it in a professional Next.js interface, deploy on free-tier Vercel and Render cloud, and validate with real field images and Telugu voice interaction.Personal motivation included applying AI & ML coursework — transfer learning, REST APIs, React frontends — to a socially impactful domain where 97.1% classification accuracy directly helps farmers make smarter spraying and irrigation decisions.
+[123|s=3|a=|img=False] 1.7 Objectives of the Proposed System
+[124|s=23|a=|img=False] Train MobileNetV2 CNN achieving ≥97% accuracy on PlantVillage (38 disease classes).
+[125|s=23|a=|img=False] Build three-tab web dashboard: Home, History & Stats, AI Chatbot.
+[126|s=23|a=|img=False] Implement 5-step automated scan pipeline from single leaf upload.
+[127|s=23|a=|img=False] Integrate optional IoT sensor data into reports, risk forecast, and chatbot.
+[128|s=23|a=|img=False] Deploy production system on Vercel and Render with JWT authentication.
+[129|s=23|a=|img=False] Support 27 languages with voice STT/TTS for farming queries.
+[130|s=3|a=|img=False] 1.8 Scope of the Project
+[131|s=|a=|img=False] In scope: CNN training and evaluation on PlantVillage (38 classes, 14 crops); Next.js 16 web frontend with three-tab dashboard; FastAPI backend with JWT authentication; PlantNet, WeatherAPI, Mappls, and OpenRouter Gemma integration; optional IoT JSON upload (iotinfo.json schema); PDF crop report export; 27-language voice chatbot; SQLite prediction history; Vercel + Render production deployment.Out of scope: native Android/iOS apps; live MQTT sensor streaming; custom hardware fabrication; drone-based multispectral imaging; and government subsidy integration. Physical Arduino/ESP32 sensors are simulated via JSON upload to validate the data model before hardware rollout.
+[132|s=3|a=|img=False] 1.9 Applications of Smart Agriculture Systems
+[133|s=23|a=|img=False] Small farmer field diagnosis
+[134|s=23|a=|img=False] Agricultural extension support
+[135|s=23|a=|img=False] College smart-agri demos
+[136|s=23|a=|img=False] Agri-startup MVP
+[137|s=23|a=|img=False] Multilingual farmer education
+[138|s=3|a=|img=False] 1.10 Advantages of the Proposed System
+[139|s=23|a=|img=False] 97.1% CNN accuracy on benchmark dataset
+[140|s=23|a=|img=False] Single-upload full pipeline
+[141|s=23|a=|img=False] IoT data optional integration
+[142|s=23|a=|img=False] India-optimized geocoding
+[143|s=23|a=|img=False] Free cloud deployment
+[144|s=23|a=|img=False] PDF professional reports
+[145|s=3|a=|img=False] 1.11 Challenges in Crop Disease Detection
+[146|s=|a=|img=False] Real-world deployment faces several challenges. PlantVillage images use uniform studio backgrounds, while field photos include soil, shadows, and blurred backgrounds — creating a domain gap that may reduce confidence on non-ideal captures. Render free-tier cold starts add 30–60 seconds on first API call after idle periods. LLM features depend on OpenRouter API availability. Low-literacy users are addressed through Telugu/Hindi voice, but dialect variation remains a research frontier.Lighting variation, partial leaf occlusion, and multi-disease co-infection on a single leaf are additional challenges documented in literature and observed during field testing with Tomato Late Blight samples.
+[147|s=3|a=|img=False] 1.12 Organization of the Report
+[148|s=|a=|img=False] Chapter 2 reviews traditional monitoring, IoT agriculture, CNN disease detection literature, and comparative systems (Table 2.8). Chapter 3 analyses functional and non-functional requirements. Chapter 4 presents the complete A-to-Z development methodology with architecture and UML diagrams. Chapter 5 describes the PlantVillage dataset, training procedure, and implementation modules. Chapter 6 reports experimental results with tables, confusion matrix, and training curves. Chapter 7 concludes with achievements and future enhancements including MQTT live IoT and TFLite mobile deployment.
+[150|s=2|a=|img=False] CHAPTER 2
+[151|s=2|a=|img=False] LITERATURE SURVEY
+[152|s=3|a=|img=False] 2.1 Introduction
+[153|s=|a=|img=False] This chapter surveys the evolution of agricultural monitoring from manual field inspection to AI-powered cloud platforms. We review peer-reviewed work on IoT smart farming, CNN-based plant pathology, image preprocessing pipelines, and commercial systems such as Plantix. The survey identifies integration gaps that motivate the SmartAgri architecture presented in later chapters.
+[154|s=3|a=|img=False] 2.2 Traditional Farming Monitoring Methods
+[155|s=|a=|img=False] For centuries, disease diagnosis relied on farmer experience, printed pictorial charts, and periodic visits by agricultural extension officers. Karnataka and Telangana state departments distribute crop calendars and disease pamphlets in Telugu, but these are static — they cannot analyse a specific leaf photograph.Manual methods suffer from subjectivity (two officers may disagree), delay (officer visits occur weekly or monthly), and geographic inequality (remote villages receive fewer visits). During the 2023 tomato price crisis in Telangana, delayed Late Blight identification was cited as a contributing factor to crop loss. Automated CNN screening addresses speed and consistency, though it complements rather than replaces extension officers.
+[156|s=3|a=|img=False] 2.3 IoT-Based Smart Agriculture Systems
+[157|s=|a=|img=False] IoT agriculture deploys soil moisture probes, DHT22 temperature/humidity sensors, pH meters, and NPK analysers connected to Arduino, ESP32, or Raspberry Pi gateways. Data streams to cloud dashboards — ThingSpeak, Blynk, Firebase — where threshold rules trigger irrigation valves or SMS alerts.Research by Garcia et al. and others demonstrates soil moisture-driven irrigation can reduce water usage by 30%. However, most IoT platforms display raw sensor graphs without correlating readings to disease risk. SmartAgri accepts the same sensor data as structured JSON (farm, soil, weather, irrigation blocks) and injects summaries into Gemma LLM prompts alongside CNN disease output — a novel correlation absent in mainstream IoT dashboards.
+[158|s=3|a=|img=False] 2.4 Deep Learning Approaches for Crop Disease Detection
+[159|s=|a=|img=False] Deep CNNs automatically learn hierarchical features from labelled leaf images, eliminating hand-crafted colour histograms and GLCM texture descriptors used in pre-2015 literature. Mohanty et al. (2016) achieved 99.35% on PlantVillage using AlexNet and GoogLeNet, establishing the dataset as a standard benchmark.Subsequent work applied ResNet, VGG, DenseNet, and EfficientNet architectures. Transfer learning — fine-tuning ImageNet-pretrained weights on plant disease data — consistently outperforms training from scratch with limited samples. SmartAgri adopts MobileNetV2 for its favourable accuracy-to-parameter ratio, enabling CPU inference on Render without GPU costs.
+[160|s=3|a=|img=False] 2.5 Image Processing Techniques in Agriculture
+[161|s=|a=|img=False] Standard preprocessing resizes images to 224×224 (MobileNetV2 input), converts to RGB tensor, and normalises with ImageNet mean/std. Training augmentation — horizontal flip, ±25° rotation, colour jitter — improves field-photo robustness. Some researchers apply background removal (GrabCut) or leaf segmentation before classification; SmartAgri uses simpler resize-normalise for latency reasons.Softmax over 38 logits produces class probabilities; top-5 reporting helps users when confidence is ambiguous between Early and Late blight — a common confusion pair in literature and in our confusion matrix.
+[162|s=3|a=|img=False] 2.6 CNN Models for Plant Disease Classification
+[163|s=|a=|img=False] MobileNetV2 (Sandler et al., 2018) uses inverted residuals and linear bottlenecks, achieving ImageNet accuracy with 3.4M parameters — 8× smaller than ResNet-50. This suits cloud CPU deployment where GPU instances are cost-prohibitive for student projects.Comparative studies on PlantVillage report MobileNetV2 reaching 96–98% accuracy with 10–20 training epochs. Our implementation adds a two-layer classifier head (1280→512→38) with dropout regularisation, reaching 97.09% validation accuracy — consistent with published benchmarks.
+[164|s=3|a=|img=False] 2.7 Sensor-Based Agricultural Monitoring Systems
+[165|s=|a=|img=False] Soil moisture below 35% volumetric water content typically triggers irrigation in drip systems. pH outside 6.0–7.0 range limits nutrient uptake. NPK sensors guide fertiliser application, reducing over-fertilisation runoff.SmartAgri maps iotinfo.json fields — soil_moisture_percent, soil_ph, nitrogen_ppm, humidity_percent — into LLM context strings. When soil moisture reads 42% alongside Tomato Late Blight detection, Gemma recommends balanced irrigation without over-watering (which worsens fungal spread). This sensor-disease correlation is the key differentiator from pure image-classification apps.
+[166|s=3|a=|img=False] 2.8 Comparative Analysis of Existing Techniques
+[167|s=|a=|img=False] Table 2.8 compares SmartAgri against representative systems across six capability dimensions. Only the proposed system achieves full marks on CNN accuracy, IoT integration, weather, LLM advisory, and multilingual voice — confirming the integration gap identified in Section 2.9.
+[168|s=|a=center|img=False] Table 2.8 — Comparative Analysis of Existing Techniques
+[170|s=3|a=|img=False] 2.9 Research Gaps Identified
+[171|s=|a=|img=False] Literature and market analysis reveal four gaps: (1) no open-source platform combines CNN + LLM + weather + IoT in one upload pipeline; (2) few systems offer Telugu voice with scan context; (3) PlantVillage demos lack production auth, history, and PDF reports; (4) IoT dashboards lack disease-aware advisory. SmartAgri addresses all four with documented deployment at https://frontend-next-sand-xi.vercel.app/.
+[172|s=3|a=|img=False] 2.10 Summary of Literature Survey
+[173|s=|a=|img=False] Published research confirms CNN feasibility for plant disease detection (97%+ on PlantVillage) and IoT feasibility for soil/weather monitoring. Commercial apps solve subsets of the problem. The literature gap — integrated, deployable, multilingual, IoT-aware smart agriculture — is the contribution space for this B.Tech project, substantiated by Table 2.8 and validated in Chapter 6.
+[175|s=2|a=|img=False] CHAPTER 3
+[176|s=2|a=|img=False] SYSTEM ANALYSIS
+[177|s=3|a=|img=False] 3.1 Existing System
+[178|s=|a=|img=False] Farmers use separate tools: paper disease charts, WhatsApp extension groups, generic weather apps, and manual record keeping without AI integration.
+[179|s=3|a=|img=False] 3.2 Limitations of Existing Systems
+[180|s=23|a=|img=False] Fragmented apps
+[181|s=23|a=|img=False] No automated pipeline
+[182|s=23|a=|img=False] No IoT-disease correlation
+[183|s=23|a=|img=False] Limited regional language support
+[184|s=23|a=|img=False] No persistent scan history
+[185|s=3|a=|img=False] 3.3 Proposed Smart Agriculture System
+[186|s=|a=|img=False] SmartAgri at https://frontend-next-sand-xi.vercel.app/ with API https://smartagri-backend-lu26.onrender.com. User signs up, sets location (GPS/city), optionally attaches IoT sensor JSON, uploads leaf image, receives 5-step automated analysis.
+[187|s=3|a=|img=False] 3.4 Feasibility Study
+[188|s=4|a=|img=False] 3.4.1 Technical Feasibility
+[189|s=|a=|img=False] Feasible using PyTorch MobileNetV2, FastAPI, Next.js, PlantNet, OpenRouter Gemma, and PlantVillage dataset — all proven technologies.
+[190|s=4|a=|img=False] 3.4.2 Economic Feasibility
+[191|s=|a=|img=False] Vercel and Render free tiers; OpenRouter Gemma free tier; Open-Meteo free weather. Suitable for academic deployment.
+[192|s=4|a=|img=False] 3.4.3 Operational Feasibility
+[193|s=|a=|img=False] Browser-only access on smartphone. No installation. Simple sign-up and one-click leaf upload.
+[194|s=3|a=|img=False] 3.5 Functional Requirements
+[195|s=|a=|img=False] Twelve functional requirements trace from farmer needs to implemented modules. Verification status appears in Table 6.6.
+[196|s=|a=center|img=False] Table 3.5 — Functional Requirements
+[198|s=3|a=|img=False] 3.6 Non-Functional Requirements
+[199|s=|a=|img=False] Quality attributes and measurable targets are listed in Table 3.6; outcomes are evaluated in Chapter 6.
+[200|s=|a=center|img=False] Table 3.6 — Non-Functional Requirements
+[202|s=3|a=|img=False] 3.7 Hardware Requirements
+[203|s=|a=center|img=False] Table 3.7 — Hardware Requirements
+[205|s=3|a=|img=False] 3.8 Software Requirements
+[206|s=|a=center|img=False] Table 3.8 — Software Requirements
+
+--- CH1 START ---
+
+[109|s=2|a=|img=False] CHAPTER 1
+[110|s=2|a=|img=False] INTRODUCTION
+[111|s=3|a=|img=False] 1.1 Introduction to Smart Agriculture
+[112|s=|a=|img=False] Smart agriculture applies information and communication technologies to farming — including IoT sensors, satellite imagery, mobile applications, weather APIs, and artificial intelligence — to improve productivity, reduce crop losses, and enable data-driven decisions. In India, where agriculture employs nearly half the workforce and contributes significantly to GDP, timely disease diagnosis and weather-aware advisories can mean the difference between a profitable harvest and total crop failure.The Government of India's Digital India and National e-Governance initiatives encourage technology adoption in rural sectors. Smartphone penetration in Telangana villages now exceeds 70%, making browser-based agricultural tools accessible without dedicated hardware. SmartAgri leverages this trend by delivering expert-level disease screening through a single web link — no app store download required.
+[113|s=3|a=|img=False] 1.2 Role of Artificial Intelligence in Agriculture
+[114|s=|a=|img=False] Artificial intelligence transforms raw agricultural data into actionable knowledge. Convolutional neural networks (CNNs) learn visual patterns of leaf lesions, chlorosis, and fungal growth from labelled image datasets, achieving accuracy comparable to trained plant pathologists on benchmark corpora such as PlantVillage.Large language models (LLMs) extend CNN outputs with natural-language explanations, treatment schedules, and risk forecasts that consider weather and soil context. Speech-to-text and text-to-speech pipelines remove literacy barriers — a Telugu-speaking farmer can ask why Late Blight occurred and hear the answer in their own language. SmartAgri combines all three AI paradigms — computer vision, NLP, and voice — in one integrated platform.
+[115|s=3|a=|img=False] 1.3 Importance of Crop Disease Detection
+[116|s=|a=|img=False] Crop diseases cause an estimated 20–40% yield loss globally. In India, fungal diseases such as Tomato Late Blight and Rice Blast spread rapidly under humid monsoon conditions, destroying entire fields within days if untreated. Early identification allows targeted fungicide application, reducing chemical overuse and environmental contamination.Visual symptoms on leaves — water-soaked lesions, yellow halos, powdery mildew coatings — are the primary diagnostic indicators accessible to farmers in the field. Automated CNN classifiers trained on thousands of labelled images can screen a leaf photograph in seconds, flagging the most probable disease before extension officers arrive. This project targets 38 disease categories across 14 economically important crops.
+[117|s=3|a=|img=False] 1.4 Need for Smart Monitoring Systems
+[118|s=|a=|img=False] Existing solutions address individual problems in isolation: weather apps show temperature but not disease risk; disease apps classify leaves but ignore soil moisture; IoT dashboards display sensor graphs without linking them to crop health. Farmers must switch between five or more tools, manually correlating outputs.An integrated smart monitoring system unifies disease CNN inference, optional IoT sensor correlation, location-aware weather alerts, LLM-generated crop reports, and multilingual voice advisory in a single automated pipeline triggered by one leaf upload. SmartAgri was designed specifically to fill this integration gap.
+[119|s=3|a=|img=False] 1.5 Problem Statement
+[120|s=|a=|img=False] Despite advances in agricultural AI research, Indian smallholder farmers lack access to an affordable, deployable system that simultaneously provides: (1) deep learning disease detection with ≥97% benchmark accuracy; (2) optional IoT sensor data integration for soil and weather correlation; (3) location-aware weather and farming alerts; (4) LLM-generated crop advisory reports downloadable as PDF; (5) multilingual voice chatbot with scan context; and (6) a one-upload automated five-step analysis pipeline requiring zero local software installation.The problem addressed by this project is the absence of such a unified, cloud-hosted, browser-accessible smart agriculture platform tailored to Indian conditions — particularly Telangana — with production deployment evidence and documented methodology.
+[121|s=3|a=|img=False] 1.6 Motivation for the Project
+[122|s=|a=|img=False] Farmers in Warangal district frequently travel 20–30 km to agricultural extension offices for disease identification, losing critical treatment days. College-level B.Tech projects often remain proof-of-concept notebooks without live deployment. This project was motivated to bridge that gap: train a CNN on the public PlantVillage dataset, wrap it in a professional Next.js interface, deploy on free-tier Vercel and Render cloud, and validate with real field images and Telugu voice interaction.Personal motivation included applying AI & ML coursework — transfer learning, REST APIs, React frontends — to a socially impactful domain where 97.1% classification accuracy directly helps farmers make smarter spraying and irrigation decisions.
+[123|s=3|a=|img=False] 1.7 Objectives of the Proposed System
+[124|s=23|a=|img=False] Train MobileNetV2 CNN achieving ≥97% accuracy on PlantVillage (38 disease classes).
+[125|s=23|a=|img=False] Build three-tab web dashboard: Home, History & Stats, AI Chatbot.
+[126|s=23|a=|img=False] Implement 5-step automated scan pipeline from single leaf upload.
+[127|s=23|a=|img=False] Integrate optional IoT sensor data into reports, risk forecast, and chatbot.
+[128|s=23|a=|img=False] Deploy production system on Vercel and Render with JWT authentication.
+[129|s=23|a=|img=False] Support 27 languages with voice STT/TTS for farming queries.
+[130|s=3|a=|img=False] 1.8 Scope of the Project
+[131|s=|a=|img=False] In scope: CNN training and evaluation on PlantVillage (38 classes, 14 crops); Next.js 16 web frontend with three-tab dashboard; FastAPI backend with JWT authentication; PlantNet, WeatherAPI, Mappls, and OpenRouter Gemma integration; optional IoT JSON upload (iotinfo.json schema); PDF crop report export; 27-language voice chatbot; SQLite prediction history; Vercel + Render production deployment.Out of scope: native Android/iOS apps; live MQTT sensor streaming; custom hardware fabrication; drone-based multispectral imaging; and government subsidy integration. Physical Arduino/ESP32 sensors are simulated via JSON upload to validate the data model before hardware rollout.
+[132|s=3|a=|img=False] 1.9 Applications of Smart Agriculture Systems
+[133|s=23|a=|img=False] Small farmer field diagnosis
+[134|s=23|a=|img=False] Agricultural extension support
+[135|s=23|a=|img=False] College smart-agri demos
+[136|s=23|a=|img=False] Agri-startup MVP
+[137|s=23|a=|img=False] Multilingual farmer education
+[138|s=3|a=|img=False] 1.10 Advantages of the Proposed System
+[139|s=23|a=|img=False] 97.1% CNN accuracy on benchmark dataset
+[140|s=23|a=|img=False] Single-upload full pipeline
+[141|s=23|a=|img=False] IoT data optional integration
+[142|s=23|a=|img=False] India-optimized geocoding
+[143|s=23|a=|img=False] Free cloud deployment
+[144|s=23|a=|img=False] PDF professional reports
+[145|s=3|a=|img=False] 1.11 Challenges in Crop Disease Detection
+[146|s=|a=|img=False] Real-world deployment faces several challenges. PlantVillage images use uniform studio backgrounds, while field photos include soil, shadows, and blurred backgrounds — creating a domain gap that may reduce confidence on non-ideal captures. Render free-tier cold starts add 30–60 seconds on first API call after idle periods. LLM features depend on OpenRouter API availability. Low-literacy users are addressed through Telugu/Hindi voice, but dialect variation remains a research frontier.Lighting variation, partial leaf occlusion, and multi-disease co-infection on a single leaf are additional challenges documented in literature and observed during field testing with Tomato Late Blight samples.
+[147|s=3|a=|img=False] 1.12 Organization of the Report
+[148|s=|a=|img=False] Chapter 2 reviews traditional monitoring, IoT agriculture, CNN disease detection literature, and comparative systems (Table 2.8). Chapter 3 analyses functional and non-functional requirements. Chapter 4 presents the complete A-to-Z development methodology with architecture and UML diagrams. Chapter 5 describes the PlantVillage dataset, training procedure, and implementation modules. Chapter 6 reports experimental results with tables, confusion matrix, and training curves. Chapter 7 concludes with achievements and future enhancements including MQTT live IoT and TFLite mobile deployment.

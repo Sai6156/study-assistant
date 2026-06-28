@@ -1,0 +1,328 @@
+﻿
+===== REFERENCE SmartAgri =====
+Images: 18
+  word/media/ (0 bytes)
+  word/media/image1.png (47138 bytes)
+  word/media/image10.png (52001 bytes)
+  word/media/image11.jpeg (47888 bytes)
+  word/media/image12.jpeg (60376 bytes)
+  word/media/image13.jpeg (50532 bytes)
+  word/media/image14.jpeg (55954 bytes)
+  word/media/image15.png (166484 bytes)
+  word/media/image16.png (81018 bytes)
+  word/media/image17.png (26887 bytes)
+  word/media/image2.png (38719 bytes)
+  word/media/image3.png (38497 bytes)
+  word/media/image4.png (28234 bytes)
+  word/media/image5.png (58124 bytes)
+  word/media/image6.png (53140 bytes)
+  word/media/image7.png (41331 bytes)
+  word/media/image8.png (34951 bytes)
+  word/media/image9.png (30077 bytes)
+
+Footer word/footer2.xml:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpsCustomData="http://www.wps.cn/officeDocument/2013/wpsCustomData" mc:Ignorable="w14 w15 wp14"><w:p w14:paraId="19E74596"><w:pPr><w:pStyle w:val="18"/><w:jc w:val="center"/><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:instrText xml:space="preserve"> PAGE  \* MERGEFORMAT </w:instrText></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>
+
+Footer word/footer3.xml:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<w:ftr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpsCustomData="http://www.wps.cn/officeDocument/2013/wpsCustomData" mc:Ignorable="w14 w15 wp14"><w:p w14:paraId="6B70E8E3"><w:pPr><w:pStyle w:val="18"/><w:jc w:val="center"/><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:instrText xml:space="preserve"> PAGE  \* MERGEFORMAT </w:instrText></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:rFonts w:hint="default"/><w:lang w:val="en-US"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>
+
+Header word/header1.xml:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordproce
+
+Section breaks (sectPr): 6
+  Section 0: fmt=decimal, start=1
+
+Total paragraphs: 544
+Style counts: {'3': 100, '23': 45, '2': 27, '4': 13}
+
+Figure/Table captions:
+  [35] TABLE OF CONTENTS
+  [70] Fig. 3.10  System Architecture Overview
+  [71] Fig. 4.2  High-Level Architecture of Proposed System
+  [72] Fig. 4.10  CNN Architecture (MobileNetV2)
+  [73] Fig. 4.5  IoT Sensor Integration Diagram
+  [74] Fig. 4.13  Data Flow Diagram ? Level 0
+  [75] Fig. 4.13  Data Flow Diagram ? Level 1
+  [76] Fig. 4.14  Use Case Diagram
+  [77] Fig. 4.15  Sequence Diagram ? Leaf Scan Pipeline
+  [78] Fig. 4.16  Activity Diagram ? Farmer Scan Session
+  [79] Fig. 4.17  ER Diagram
+  [80] Fig. 4.19  System Flowchart
+  [81] Fig. 5.15a  Home Tab ? Smart Leaf Analysis Dashboard
+  [82] Fig. 5.15b  IoT Sensor Data Panel
+  [83] Fig. 5.15c  AI Chatbot with Scan Context
+  [84] Fig. 5.15d  Multilingual Telugu Voice Chat
+  [85] Fig. 6.5  Confusion Matrix
+  [86] Fig. 6.9  Training Accuracy and Loss Graphs
+  [87] Fig. 6.10  Disease Detection Output Screenshots
+  [90] Table 2.8  Comparative Analysis of Existing Techniques
+  [91] Table 3.5  Functional Requirements
+  [92] Table 3.6  Non-Functional Requirements
+  [93] Table 3.7  Hardware Requirements
+  [94] Table 3.8  Software Requirements
+  [95] Table 5.4  Dataset Classes and Categories
+  [96] Table 5.9  Tools and Technologies Used
+  [97] Table 6.2  Performance Evaluation Metrics
+  [98] Table 6.3  Accuracy Analysis Results
+  [99] Table 6.4  Precision, Recall, and F1-Score Summary
+  [100] Table 6.4b  Selected Per-Class Metrics
+  [101] Table 6.6  Disease Detection and System Test Results
+  [102] Table 6.7  IoT Sensor Monitoring Results
+  [103] Table 6.8  Comparative Analysis with Existing Methods
+  [167] Table 2.8 compares SmartAgri against representative systems across six capability dimensions. Only t
+  [168] Table 2.8 ? Comparative Analysis of Existing Techniques
+  [196] Table 3.5 ? Functional Requirements
+  [200] Table 3.6 ? Non-Functional Requirements
+  [203] Table 3.7 ? Hardware Requirements
+  [206] Table 3.8 ? Software Requirements
+  [213] Fig. 3.10 ? System Architecture Overview
+  [224] Fig. 4.2 ? High-Level Architecture
+  [262] Fig. 4.5 ? IoT Sensor Integration Diagram
+  [276] Fig. 4.10 ? CNN Architecture (MobileNetV2)
+  [286] Fig. 4.13 ? Data Flow Diagram (Level 0 & Level 1)
+  [292] Fig. 4.14 ? Use Case Diagram
+  [298] Fig. 4.15 ? Sequence Diagram (Leaf Scan Pipeline)
+  [304] Fig. 4.16 ? Activity Diagram
+  [310] Fig. 4.17 ? ER Diagram / Database Design
+  [323] Fig. 4.19 ? System Flowchart
+  [336] Table 5.4 ? Dataset Classes and Categories
+  [357] Table 5.9 ? Tools and Technologies Used
+  [373] Fig. 5.15a ? Home Tab: Smart Leaf Analysis Dashboard
+  [378] Fig. 5.15b ? IoT Sensor Data Panel (grouped JSON display)
+  [383] Fig. 5.15c ? AI Chatbot with Tomato Late Blight scan context
+  [388] Fig. 5.15d ? Multilingual Telugu Voice Chat Response
+  [399] Table 6.2 ? Performance Evaluation Metrics
+  [404] Table 6.3 ? Accuracy Analysis Results
+  [408] Table 6.4 ? Precision, Recall, and F1-Score Summary
+  [411] Table 6.4b lists representative per-class scores for crops central to Telangana agriculture.
+  [412] Table 6.4b ? Selected Per-Class Metrics
+  [417] Fig. 6.5 ? Confusion Matrix (38 PlantVillage Classes)
+  [422] Table 6.6 ? Disease Detection and System Test Results
+  [427] Table 6.7 ? IoT Sensor Monitoring Results
+  [430] Table 6.8 extends the literature comparison (Table 2.8) with measured outcomes from this project. Sm
+  [431] Table 6.8 ? Comparative Analysis with Existing Methods
+  [436] Fig. 6.9 ? Training Accuracy and Loss Graphs (epochs 1?10: val_acc 92.15% ? 97.09%)
+  [442] Fig. 6.10 ? Application Output Screenshots
+
+Headings sample:
+
+===== STYLES: c:\Users\Shashank\Desktop\archive\june end projects\SmartAgri project B24AI185.docx =====
+id=1 name=Normal sz=22 font=None
+id=2 name=heading 1 sz=28 font=None bold
+id=3 name=heading 2 sz=26 font=None bold
+id=4 name=heading 3 font=None bold
+id=5 name=heading 4 font=None bold
+id=6 name=heading 5 font=None
+id=7 name=heading 6 font=None
+id=8 name=heading 7 font=None
+id=9 name=heading 8 sz=20 font=None
+id=10 name=heading 9 sz=20 font=None
+id=12 name=Normal Table
+id=16 name=caption sz=18 bold
+id=18 name=footer
+id=19 name=header
+id=34 name=Subtitle sz=24 font=None
+id=36 name=Title sz=52 font=None
+id=135 name=Header Char
+id=136 name=Footer Char
+id=138 name=Heading 1 Char sz=28 font=None bold
+id=139 name=Heading 2 Char sz=26 font=None bold
+id=140 name=Heading 3 Char font=None bold
+id=141 name=Title Char sz=52 font=None
+id=142 name=Subtitle Char sz=24 font=None
+id=150 name=Heading 4 Char font=None bold
+id=151 name=Heading 5 Char font=None
+id=152 name=Heading 6 Char font=None
+id=153 name=Heading 7 Char font=None
+id=154 name=Heading 8 Char sz=20 font=None
+id=155 name=Heading 9 Char sz=20 font=None
+id=162 name=Book Title bold
+id=163 name=TOC Heading
+
+===== SECTIONS: c:\Users\Shashank\Desktop\archive\june end projects\SmartAgri project B24AI185.docx =====
+Section 0:
+  page: 12240x15840 twips
+  margin top: 1.00 in
+  margin bottom: 1.00 in
+  margin left: 1.25 in
+  margin right: 1.00 in
+Section 1:
+  page: 12240x15840 twips
+  margin top: 1.00 in
+  margin bottom: 1.00 in
+  margin left: 1.25 in
+  margin right: 1.00 in
+  pgNum fmt=lowerRoman start=1
+Section 2:
+  page: 12240x15840 twips
+  margin top: 1.00 in
+  margin bottom: 1.00 in
+  margin left: 1.25 in
+  margin right: 1.00 in
+  pgNum fmt=decimal start=1
+
+===== EXISTING Study Assistant =====
+Images: 0
+
+Section breaks (sectPr): 2
+
+Total paragraphs: 403
+Style counts: {'Heading2': 70, 'ListBullet': 56, 'Heading1': 26, 'Heading3': 11}
+
+Figure/Table captions:
+  [71] TABLE OF CONTENTS
+  [83] Fig. 3.1  System Architecture Overview
+  [84] Fig. 4.1  High-Level Architecture of Proposed System
+  [85] Fig. 4.2  Data Flow Diagram ? Level 0
+  [86] Fig. 4.3  Data Flow Diagram ? Level 1
+  [87] Fig. 4.4  Use Case Diagram
+  [88] Fig. 4.5  Sequence Diagram ? Chat Interaction
+  [89] Fig. 4.6  Activity Diagram ? User Study Session
+  [90] Fig. 4.7  Entity Relationship Diagram (Logical Data Model)
+  [91] Fig. 5.1  Authentication Page
+  [92] Fig. 5.2  Main Three-Panel Interface
+  [93] Fig. 5.3  Mind Map Studio Output
+  [94] Fig. 5.4  Audio Overview Interface
+  [95] Fig. 6.1  Chat Response with Action Buttons
+  [96] Fig. 6.2  Study Resources Output
+  [99] Table 2.1  Comparative Analysis of Existing Systems
+  [100] Table 3.1  Hardware Requirements
+  [101] Table 3.2  Software Requirements
+  [102] Table 3.3  Functional Requirements
+  [103] Table 3.4  Non-Functional Requirements
+  [104] Table 5.1  Technology Stack
+  [105] Table 6.1  Test Cases and Results
+  [106] Table 6.2  Performance Metrics
+
+Headings sample:
+  Heading1: BONAFIDE CERTIFICATE
+  Heading1: PROJECT APPROVAL SHEET
+  Heading1: DECLARATION
+  Heading1: ACKNOWLEDGEMENT
+  Heading1: ABSTRACT
+  Heading1: TABLE OF CONTENTS
+  Heading1: LIST OF FIGURES
+  Heading1: LIST OF TABLES
+  Heading1: LIST OF ABBREVIATIONS AND ACRONYMS
+  Heading1: CHAPTER 1
+  Heading1: INTRODUCTION
+  Heading2: 1.1 Introduction to Artificial Intelligence
+  Heading2: 1.2 Voice-Controlled Systems Overview
+  Heading2: 1.3 Need for AI-Based Study Assistants
+  Heading2: 1.4 Problem Statement
+  Heading2: 1.5 Motivation of the Project
+  Heading2: 1.6 Objectives of the Project
+  Heading2: 1.7 Scope of the Project
+  Heading2: 1.8 Proposed Solution
+  Heading2: 1.9 Applications of the System
+  Heading2: 1.10 Advantages of the Proposed System
+  Heading2: 1.11 Organization of the Report
+  Heading1: CHAPTER 2
+  Heading1: LITERATURE SURVEY
+  Heading2: 2.1 Introduction
+  Heading2: 2.2 Existing Voice Assistant Technologies
+  Heading2: 2.3 AI in Smart Education Systems
+  Heading2: 2.4 Speech Recognition Techniques
+  Heading2: 2.5 Natural Language Processing Approaches
+  Heading2: 2.6 Machine Learning Models Used in Assistants
+  Heading2: 2.7 Comparative Analysis of Existing Systems
+  Heading2: 2.8 Research Gaps Identified
+  Heading2: 2.9 Summary
+  Heading1: CHAPTER 3
+  Heading1: SYSTEM ANALYSIS
+  Heading2: 3.1 Existing System
+  Heading2: 3.2 Drawbacks of Existing System
+  Heading2: 3.3 Proposed System
+  Heading2: 3.4 Feasibility Study
+  Heading3: 3.4.1 Technical Feasibility
+  Heading3: 3.4.2 Economic Feasibility
+  Heading3: 3.4.3 Operational Feasibility
+  Heading2: 3.5 System Requirements
+  Heading3: 3.5.1 Hardware Requirements
+  Heading3: 3.5.2 Software Requirements
+  Heading2: 3.6 Functional Requirements
+  Heading2: 3.7 Non-Functional Requirements
+  Heading2: 3.8 System Architecture Overview
+  Heading1: CHAPTER 4
+  Heading1: DESIGN METHODOLOGY
+  Heading2: 4.1 Introduction
+  Heading2: 4.2 Architecture of the Proposed System
+  Heading2: 4.3 Module Description
+  Heading3: 4.3.1 Voice Input Module
+  Heading3: 4.3.2 Speech-to-Text Module
+  Heading3: 4.3.3 NLP Processing Module
+  Heading3: 4.3.4 AI Response Generation Module
+  Heading3: 4.3.5 Data Storage Module
+  Heading3: 4.3.6 User Interface Module
+  Heading2: 4.4 Data Flow Diagram (DFD)
+  Heading2: 4.5 Use Case Diagram
+  Heading2: 4.6 Sequence Diagram
+  Heading2: 4.7 Activity Diagram
+  Heading2: 4.8 ER Diagram / Database Design
+  Heading2: 4.9 Algorithm Design
+  Heading2: 4.10 Flowchart of System Operation
+  Heading2: 4.11 Security and Privacy Considerations
+  Heading1: CHAPTER 5
+  Heading1: IMPLEMENTATION
+  Heading2: 5.1 Introduction
+  Heading2: 5.2 Development Environment
+  Heading2: 5.3 Tools and Technologies Used
+  Heading2: 5.4 Coding Methodology
+  Heading2: 5.5 Implementation of Modules
+  Heading2: 5.6 Integration of Voice Commands
+  Heading2: 5.7 AI Model Training and Testing
+  Heading2: 5.8 User Authentication Process
+  Heading2: 5.9 API Integration
+  Heading2: 5.10 Screenshots of Implementation
+  Heading1: CHAPTER 6
+  Heading1: RESULTS AND DISCUSSION
+  Heading2: 6.1 Experimental Setup
+  Heading2: 6.2 Test Cases
+  Heading2: 6.3 Performance Evaluation
+  Heading2: 6.4 Accuracy of Speech Recognition
+  Heading2: 6.5 Response Time Analysis
+  Heading2: 6.6 Comparative Performance Analysis
+  Heading2: 6.7 Output Screenshots
+  Heading2: 6.8 Discussion of Results
+  Heading2: 6.9 Limitations of the System
+  Heading1: CHAPTER 7
+  Heading1: CONCLUSION AND FUTURE SCOPE
+  Heading2: 7.1 Conclusion
+  Heading2: 7.2 Achievements of the Project
+  Heading2: 7.3 Future Enhancements
+  Heading2: 7.4 Real-Time Industrial Applications
+  Heading2: 7.5 Final Remarks
+  Heading1: REFERENCES
+  Heading1: APPENDICES
+  Heading2: Appendix A û Source Code Structure
+  Heading2: Appendix B û Sample Voice Commands
+  Heading2: Appendix C û Test Case Reports
+  Heading2: Appendix D û User Manual
+  Heading2: Appendix E û Installation Guide
+  Heading2: Appendix F û Dataset Details
+  Heading2: Appendix G û Screenshots and Outputs
+  Heading1: ANNEXURES
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image1.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image10.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image11.jpeg
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image12.jpeg
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image13.jpeg
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image14.jpeg
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image15.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image16.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image17.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image2.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image3.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image4.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image5.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image6.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image7.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image8.png
+Extracted: c:\Users\Shashank\Desktop\archive\june end projects\voice-study-assistant\report_assets\ref_image9.png

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Assistant</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.css" id="hljs-theme" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/@antv/infographic@latest/dist/infographic.umd.js" onerror="window.InfographicUnavailable=true"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOP BAR
+  ════════════════════════════════════════════════════════════════ -->
+  <header id="topbar">
+    <div class="topbar-left">
+      <button id="mobile-menu-btn" class="icon-btn" title="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <!-- Logo -->
+      <div class="app-logo">
+        <svg viewBox="0 0 28 28" fill="none" width="28" height="28"><rect width="28" height="28" rx="6" fill="url(#lg)"/><path d="M7 8h14M7 13h10M7 18h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="lg" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs></svg>
+      </div>
+      <!-- Notebook title + switcher -->
+      <div class="nb-switcher" id="nb-switcher">
+        <span id="nb-current-title" class="nb-current-title">Untitled Notebook</span>
+        <svg class="nb-caret" viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M4 6l4 4 4-4"/></svg>
+        <div id="nb-dropdown" class="nb-dropdown hidden">
+          <div id="nb-dropdown-list"></div>
+          <div class="nb-dropdown-footer">
+            <button id="nb-new-btn" class="nb-new-btn">+ New notebook</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="lang-selector">
+        <select id="default-lang" title="Output language">
+          <option value="English">English</option>
+          <option value="Hindi">हिंदी</option>
+          <option value="Telugu">తెలుగు</option>
+          <option value="Tamil">தமிழ்</option>
+          <option value="Bengali">বাংলা</option>
+          <option value="Kannada">ಕನ್ನಡ</option>
+          <option value="Marathi">मराठी</option>
+          <option value="Gujarati">ગુજરાતી</option>
+          <option value="Spanish">Español</option>
+          <option value="French">Français</option>
+          <option value="German">Deutsch</option>
+          <option value="Arabic">العربية</option>
+          <option value="Japanese">日本語</option>
+          <option value="Chinese">中文</option>
+        </select>
+      </div>
+      <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+        <svg id="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <!-- User badge -->
+      <div id="user-badge" style="display:flex;align-items:center;gap:8px;margin-left:6px">
+        <div id="user-avatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer" title="Account" onclick="signOut()">?</div>
+        <span id="user-name-badge" style="font-size:12px;font-weight:600;color:var(--text-secondary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="signOut()" title="Sign out"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN 3-PANEL AREA
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="panels">
+
+    <!-- ─── PANEL 1: SOURCES ──────────────────────────────────── -->
+    <aside id="sources-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Sources</h2>
+        <div class="panel-header-actions">
+          <label class="select-all-row" title="Toggle all sources">
+            <input type="checkbox" id="select-all-sources" checked />
+            <span class="select-all-label">Select all</span>
+          </label>
+        </div>
+      </div>
+
+      <button id="add-source-btn" class="add-source-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add sources
+      </button>
+
+      <div id="sources-list" class="sources-list"></div>
+
+      <!-- Source viewer (replaces list on citation click) -->
+      <div id="source-viewer" class="source-viewer hidden">
+        <button id="sv-back" class="sv-back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+          Sources
+        </button>
+        <div id="sv-type-badge"></div>
+        <h3 id="sv-title" class="sv-title"></h3>
+        <div id="sv-url" class="sv-url hidden"></div>
+        <div id="sv-summary" class="sv-summary hidden"></div>
+        <div id="sv-content" class="sv-content"></div>
+      </div>
+    </aside>
+
+    <!-- ─── PANEL 2: CHAT ─────────────────────────────────────── -->
+    <main id="chat-panel">
+      <!-- Chat sub-header: tabs + actions -->
+      <div id="chat-subheader" class="chat-subheader">
+        <div id="chat-tabs" class="chat-tabs"></div>
+        <div class="chat-subheader-actions">
+          <button id="translate-last-btn" class="subheader-btn" title="Translate last response">
+            🌐 Translate
+          </button>
+          <button id="export-chat-btn" class="subheader-btn" title="Export chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+          <button id="new-chat-btn" class="subheader-btn accent">+ New chat</button>
+        </div>
+      </div>
+
+      <!-- Chat thread -->
+      <section id="thread" class="thread"></section>
+
+      <!-- TTS Player bar (shown while speaking) -->
+      <div id="tts-player" class="tts-player hidden">
+        <div class="tts-player-left">
+          <div class="tts-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <span id="tts-player-text" class="tts-player-text">Speaking…</span>
+        </div>
+        <div class="tts-player-controls">
+          <button id="tts-pause-btn" class="tts-ctrl-btn" title="Pause / Resume">
+            <svg id="tts-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <svg id="tts-play-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+          <button id="tts-stop-btn" class="tts-ctrl-btn stop" title="Stop">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="chat-input-area">
+        <div class="source-count-row">
+          <span id="source-count-pill" class="source-count-pill">0 sources</span>
+          <div class="subject-wrap">
+            <select id="subject">
+              <option value="">Any subject</option>
+              <option>Programming</option>
+              <option>Mathematics</option>
+              <option>AI/ML</option>
+              <option>Science</option>
+              <option>History</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <!-- Voice controls -->
+          <label class="voice-toggle-pill" title="Voice replies">
+            <input type="checkbox" id="voice-toggle" checked />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </label>
+          <div class="speed-pill">
+            <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" title="Speech speed" />
+            <span id="speed-val">1×</span>
+          </div>
+          <span id="lang-indicator" class="lang-indicator hidden" title="Auto-detected input language">🌐 EN</span>
+        </div>
+        <div class="input-bar" id="input-bar">
+          <button id="mic-btn" class="mic-btn" title="Voice input">
+            <span class="mic-ring"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <textarea id="text-input" rows="1" placeholder="Start typing..."></textarea>
+          <button id="send-btn" class="send-btn" title="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div id="status" class="status-bar"></div>
+      </div>
+    </main>
+
+    <!-- ─── PANEL 3: STUDIO ───────────────────────────────────── -->
+    <aside id="studio-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Studio</h2>
+      </div>
+
+      <div class="studio-grid">
+        <!-- Audio -->
+        <button class="studio-card" data-studio="audio">
+          <div class="sc-icon audio-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z" stroke-dasharray="4 2"/><path d="M12 9v6M9 12h6"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Audio Overview</div>
+            <div class="sc-desc">2-speaker podcast</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Slide Deck -->
+        <button class="studio-card" data-studio="slides">
+          <div class="sc-icon slides-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Slide Deck</div>
+            <div class="sc-desc">Presentation slides</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Mind Map -->
+        <button class="studio-card studio-card-featured" data-studio="mindmap">
+          <div class="sc-icon mindmap-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="3"/><circle cx="3" cy="6" r="2"/><circle cx="21" cy="6" r="2"/><circle cx="3" cy="18" r="2"/><circle cx="21" cy="18" r="2"/><circle cx="12" cy="3" r="2"/><line x1="12" y1="9" x2="12" y2="5"/><line x1="9.5" y1="10.5" x2="4.5" y2="7.5"/><line x1="14.5" y1="10.5" x2="19.5" y2="7.5"/><line x1="9.5" y1="13.5" x2="4.5" y2="16.5"/><line x1="14.5" y1="13.5" x2="19.5" y2="16.5"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Mind Map</div>
+            <div class="sc-desc">Interactive concept map</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Reports -->
+        <button class="studio-card" data-studio="report">
+          <div class="sc-icon report-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Report</div>
+            <div class="sc-desc">Full analysis document</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Flashcards -->
+        <button class="studio-card" data-studio="flashcards">
+          <div class="sc-icon flash-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="7" y1="10" x2="7" y2="20"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Flashcards</div>
+            <div class="sc-desc">Active recall study</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Quiz -->
+        <button class="studio-card" data-studio="quiz">
+          <div class="sc-icon quiz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Quiz</div>
+            <div class="sc-desc">Test your knowledge</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Data Table (full-width) -->
+        <button class="studio-card studio-card-wide" data-studio="datatable">
+          <div class="sc-icon table-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Data Table</div>
+            <div class="sc-desc">Structured data extraction</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Study Guide section -->
+      <div class="studio-section-label">Study Guide</div>
+      <div class="studio-grid">
+        <!-- FAQ -->
+        <button class="studio-card" data-studio="faq">
+          <div class="sc-icon faq-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round" stroke-width="3"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">FAQ</div>
+            <div class="sc-desc">Q&amp;A from sources</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Briefing -->
+        <button class="studio-card" data-studio="briefing">
+          <div class="sc-icon briefing-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="11" y2="17"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Briefing Doc</div>
+            <div class="sc-desc">Executive summary</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Outline -->
+        <button class="studio-card studio-card-wide" data-studio="outline">
+          <div class="sc-icon outline-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6" stroke-linecap="round" stroke-width="3"/><line x1="3" y1="12" x2="3.01" y2="12" stroke-linecap="round" stroke-width="3"/><line x1="3" y1="18" x2="3.01" y2="18" stroke-linecap="round" stroke-width="3"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Study Outline</div>
+            <div class="sc-desc">Topic hierarchy from sources</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Study Resources -->
+        <button class="studio-card studio-card-wide resources-card" data-studio="resources">
+          <div class="sc-icon resources-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Study Resources</div>
+            <div class="sc-desc">Curated roadmap &amp; resources to master the topic</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Infographic -->
+        <button class="studio-card studio-card-wide infographic-card" data-studio="infographic">
+          <div class="sc-icon infographic-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M6.5 14h1m-1 3.5h4M10 14v7"/></svg>
+          </div>
+          <div class="sc-info">
+            <div class="sc-title">Infographic</div>
+            <div class="sc-desc">Visual infographic from sources</div>
+          </div>
+          <svg class="sc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Study Resources modal -->
+      <div id="resources-modal" class="modal-backdrop hidden">
+        <div class="modal resources-modal-box">
+          <h3 class="modal-title">📚 Study Resources</h3>
+          <p class="modal-subtitle">Choose how to generate your study resource guide</p>
+          <div class="resources-mode-btns">
+            <button class="resources-mode-btn active" id="res-mode-sources" data-mode="sources">
+              <span class="rmb-icon">📂</span>
+              <div>
+                <div class="rmb-title">From my sources</div>
+                <div class="rmb-desc">Extract topics from uploaded sources and generate a mastery roadmap</div>
+              </div>
+            </button>
+            <button class="resources-mode-btn" id="res-mode-topic" data-mode="topic">
+              <span class="rmb-icon">✏️</span>
+              <div>
+                <div class="rmb-title">Enter a topic</div>
+                <div class="rmb-desc">Type any subject and get a curated resource guide to master it</div>
+              </div>
+            </button>
+          </div>
+          <div id="res-topic-row" class="res-topic-row hidden">
+            <input id="res-topic-input" type="text" class="res-topic-input" placeholder="e.g. Machine Learning, Data Structures, React…" />
+          </div>
+          <div class="modal-actions">
+            <button id="resources-cancel" class="modal-btn secondary">Cancel</button>
+            <button id="resources-generate-btn" class="modal-btn primary">Generate Resources</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Note + Notes list -->
+      <div class="studio-divider"></div>
+      <button id="add-note-btn" class="add-note-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add note
+      </button>
+      <div id="notes-list" class="notes-list"></div>
+
+      <!-- Saved Studio Outputs -->
+      <div class="studio-divider"></div>
+      <div class="studio-saved-section">
+        <div class="studio-saved-header">
+          <span>Saved</span>
+          <button id="clear-saved-btn" class="clear-saved-btn" title="Clear all saved">Clear all</button>
+        </div>
+        <div id="studio-saved-list" class="studio-saved-list"></div>
+      </div>
+    </aside>
+
+  </div><!-- /#panels -->
+</div><!-- /#app -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STUDIO OUTPUT PANEL (slides over the chat from the right)
+════════════════════════════════════════════════════════════════ -->
+<div id="studio-output-overlay" class="studio-output-overlay hidden">
+  <div id="studio-output-panel" class="studio-output-panel">
+    <div class="sop-header">
+      <div class="sop-title-row">
+        <button id="sop-close" class="sop-close-btn" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <h2 id="sop-title" class="sop-title"></h2>
+      </div>
+      <div id="sop-actions" class="sop-actions"></div>
+    </div>
+    <div id="sop-body" class="sop-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ADD SOURCE MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="source-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Add source</h3>
+      <button id="source-cancel" class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub">Add content to ground your answers. AI will cite sources inline.</p>
+    <div class="modal-tabs">
+      <button class="mtab active" data-mtab="text">Paste text</button>
+      <button class="mtab" data-mtab="pdf">Upload PDF</button>
+      <button class="mtab" data-mtab="url">From URL</button>
+    </div>
+    <div id="mtab-text" class="mtab-content">
+      <input id="source-title" type="text" placeholder="Title (optional)" />
+      <textarea id="source-text" rows="7" placeholder="Paste your source text here…"></textarea>
+    </div>
+    <div id="mtab-pdf" class="mtab-content hidden">
+      <div class="pdf-drop-zone" id="pdf-drop-zone">
+        <div class="pdf-drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <p>Click to select PDF</p>
+        <p class="pdf-drop-sub">Text extracted automatically</p>
+        <input type="file" id="modal-pdf-input" accept="application/pdf" style="position:absolute;inset:0;opacity:0;cursor:pointer" />
+        <div id="pdf-file-name" class="pdf-file-name"></div>
+      </div>
+    </div>
+    <div id="mtab-url" class="mtab-content hidden">
+      <input id="source-url" type="url" placeholder="https://example.com/article" />
+      <div id="url-status" class="url-status hidden"></div>
+    </div>
+    <div class="modal-actions">
+      <button id="source-save" class="primary-btn">Add source</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TRANSLATE MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="translate-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card modal-sm">
+    <div class="modal-head">
+      <h3>Translate response</h3>
+      <button id="translate-cancel" class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <select id="translate-target" class="full-select">
+      <option value="Hindi">हिंदी (Hindi)</option>
+      <option value="Telugu">తెలుగు (Telugu)</option>
+      <option value="Tamil">தமிழ் (Tamil)</option>
+      <option value="Bengali">বাংলা (Bengali)</option>
+      <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+      <option value="Marathi">मराठी (Marathi)</option>
+      <option value="Gujarati">ગુજરાતી (Gujarati)</option>
+      <option value="English">English</option>
+      <option value="Spanish">Español</option>
+      <option value="French">Français</option>
+      <option value="German">Deutsch</option>
+      <option value="Arabic">العربية</option>
+      <option value="Japanese">日本語</option>
+    </select>
+    <div class="modal-actions">
+      <label class="check-row">
+        <input type="checkbox" id="translate-set-default" />
+        Set as default language
+      </label>
+      <button id="translate-go" class="primary-btn">Translate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     QUIZ MODAL (inline in studio output panel)
+     PODCAST / AUDIO options modal
+════════════════════════════════════════════════════════════════ -->
+<div id="audio-options-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card modal-sm">
+    <div class="modal-head">
+      <h3>Audio Overview</h3>
+      <button id="audio-options-cancel" class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <label style="font-size:13px;color:var(--text-dim)">Optional topic focus</label>
+      <input id="audio-topic" type="text" placeholder="Leave blank to use all sources" />
+      <label style="font-size:13px;color:var(--text-dim)">Length</label>
+      <select id="audio-length">
+        <option value="short">Short (3-4 exchanges)</option>
+        <option value="medium" selected>Medium (6-8 exchanges)</option>
+        <option value="long">Long (10-12 exchanges)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button id="audio-generate-btn" class="primary-btn">Generate</button>
+    </div>
+  </div>
+</div>
+
+<div id="quiz-options-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card modal-sm">
+    <div class="modal-head">
+      <h3>Generate Quiz</h3>
+      <button id="quiz-options-cancel" class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <input id="quiz-topic" type="text" placeholder="Topic (or leave blank for sources)" />
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--text-dim)">Questions</label>
+          <select id="quiz-count" style="width:100%;margin-top:4px">
+            <option value="5" selected>5</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--text-dim)">Difficulty</label>
+          <select id="quiz-level" style="width:100%;margin-top:4px">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="quiz-generate-btn" class="primary-btn">Generate Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOAST
+════════════════════════════════════════════════════════════════ -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="config.js"></script>
+<script src="mindmap.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

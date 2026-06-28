@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: voice-study-assistant-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: OPENROUTER_DEFAULT_MODEL
+        value: deepseek/deepseek-v3.2
+      - key: ALLOWED_ORIGIN
+        value: https://voice-study-assistant.vercel.app
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: UID_PEPPER
+        sync: false
