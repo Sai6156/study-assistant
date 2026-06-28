@@ -516,6 +516,15 @@ function showOk(id, msg) {
 }
 
 function saveAuth(token, user) {
+  const prev = localStorage.getItem('sa_auth');
+  if (prev) {
+    try {
+      const old = JSON.parse(prev);
+      if (old?.user?.uid && old.user.uid !== user.uid) {
+        localStorage.removeItem(`sa_notebooks_v2_${old.user.uid}`);
+      }
+    } catch {}
+  }
   localStorage.setItem('sa_auth', JSON.stringify({ token, user }));
 }
 

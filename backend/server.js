@@ -15,7 +15,7 @@ app.use(express.json({ limit: "25mb" }));
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "*";
 app.use(cors({
   origin: true,
-  methods: ["GET", "POST", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false,
 }));
@@ -97,12 +97,13 @@ app.post("/api/auth/signin", async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Verify token — returns user info embedded in JWT (no DB lookup)
-app.get("/api/auth/me", (req, res) => {
-  const payload = verifyToken(req);
-  if (!payload) return res.status(401).json({ error: "Unauthorized" });
-  const { uid, email, username, role } = payload;
-  res.json({ uid, email, username, role });
+// Verify token — confirms JWT matches live Postgres account
+app.get("/api/auth/me", async (req, res) => {
+  try {
+    const user = await requireAuth(req, res);
+    if (!user) return;
+    res.json({ uid: user.uid, email: user.email, username: user.username, role: user.role || "student" });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Notebooks — server sync so the same account works across browsers/profiles

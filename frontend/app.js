@@ -46,8 +46,8 @@ function activeChatKey(nbId) {
 
 function signOut() {
   if (!confirm("Sign out of Study Assistant?")) return;
+  flushServerNotebookSync();
   localStorage.removeItem("sa_auth");
-  if (NB_STORAGE_KEY) localStorage.removeItem(NB_STORAGE_KEY);
   location.replace("auth.html");
 }
 
@@ -109,7 +109,13 @@ function saveNotebooks() {
 
 async function fetchServerNotebooks() {
   if (!authToken) return { notebooks: {}, updatedAt: 0 };
-  return window.VSA_SYNC.fetchServerNotebooks(authToken);
+  const result = await window.VSA_SYNC.fetchServerNotebooks(authToken);
+  if (result.error) {
+    const err = new Error(result.error);
+    err.status = result.status;
+    throw err;
+  }
+  return result;
 }
 
 function scheduleServerNotebookSync() {
@@ -220,10 +226,6 @@ function applyNotebookState(saved) {
 
 async function initNotebooks() {
   setStatus("Syncing notebooks…");
-  const remote = await fetchServerNotebooks();
-  const remoteNotebooks = remote?.notebooks || {};
-  const remoteHasData = Object.keys(remoteNotebooks).length > 0;
-
   let local = loadNotebooks() || {};
   const migrated = migrateOldData();
   if (migrated?.all) {
@@ -233,14 +235,18 @@ async function initNotebooks() {
     local = { [id]: { ...migrated, id, studioOutputs: migrated.studioOutputs || [], updatedAt: Date.now() } };
   }
 
-  let merged;
-  if (remoteHasData) {
-    merged = mergeNotebooks(remoteNotebooks, local);
-  } else if (Object.keys(local).length > 0) {
-    merged = local;
-  } else {
-    merged = {};
+  let remoteNotebooks = {};
+  let remoteUpdatedAt = 0;
+  try {
+    const remote = await fetchServerNotebooks();
+    remoteNotebooks = remote?.notebooks || {};
+    remoteUpdatedAt = remote?.updatedAt || 0;
+  } catch (e) {
+    console.error("Server fetch failed, using local cache:", e);
+    if (e.status === 401) throw e;
   }
+
+  const merged = mergeNotebooks(local, remoteNotebooks);
 
   if (Object.keys(merged).length === 0) {
     const id = "nb_" + makeId();
@@ -253,10 +259,9 @@ async function initNotebooks() {
 
   state.notebooks = merged;
   localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(merged));
-  _notebooksUpdatedAt = remote.updatedAt || 0;
+  _notebooksUpdatedAt = remoteUpdatedAt;
 
-  const needsUpload = !remoteHasData && Object.keys(local).length > 0
-    || (remoteHasData && !notebooksEqual(merged, remoteNotebooks));
+  const needsUpload = !notebooksEqual(merged, remoteNotebooks);
 
   if (needsUpload) {
     try {
@@ -271,12 +276,29 @@ async function initNotebooks() {
       toast(syncErrorMessage(e, e.status));
       console.error("Initial notebook sync failed:", e);
     }
-  } else if (remoteHasData) {
-    toast("Notebooks synced");
   }
 
   applyNotebookState(state.notebooks);
   setStatus("");
+}
+
+async function verifySession() {
+  if (!authToken) return false;
+  try {
+    const res = await fetch(`${API}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (data.uid && data.uid !== currentUser?.uid) {
+      NB_STORAGE_KEY = `sa_notebooks_v2_${data.uid}`;
+      currentUser = { ...currentUser, ...data };
+      localStorage.setItem("sa_auth", JSON.stringify({ token: authToken, user: currentUser }));
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function createNotebook(name = "New Notebook") {
@@ -2982,7 +3004,24 @@ function init() {
   $("speed-val").textContent = parseFloat($("speed").value) + "×";
   initSpeechRecognition();
   initEvents();
-  initNotebooks().then(() => render()).catch(() => render());
+  verifySession()
+    .then((ok) => {
+      if (!ok) {
+        localStorage.removeItem("sa_auth");
+        location.replace("auth.html");
+        return;
+      }
+      return initNotebooks();
+    })
+    .then(() => render())
+    .catch((e) => {
+      if (e?.status === 401) {
+        localStorage.removeItem("sa_auth");
+        location.replace("auth.html");
+        return;
+      }
+      render();
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);

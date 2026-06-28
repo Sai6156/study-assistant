@@ -156,7 +156,14 @@ window.VSA_SYNC = (function () {
         if (res.status === 503 || res.status === 502) {
           if (i < retries) { await sleep(3000); continue; }
         }
-        if (!res.ok) return { notebooks: {}, updatedAt: 0 };
+        if (res.status === 401) {
+          const err = await res.json().catch(() => ({}));
+          return { notebooks: {}, updatedAt: 0, error: err.error || "Session expired", status: 401 };
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          return { notebooks: {}, updatedAt: 0, error: err.error || `Fetch failed (${res.status})`, status: res.status };
+        }
         const data = await res.json();
         return {
           notebooks: data?.notebooks && typeof data.notebooks === "object" ? data.notebooks : {},
@@ -214,21 +221,10 @@ window.VSA_SYNC = (function () {
     } catch {}
 
     const remote = await fetchServerNotebooks(token);
+    if (remote.error) throw Object.assign(new Error(remote.error), { status: remote.status });
     const remoteNotebooks = remote.notebooks || {};
-    const remoteHasData = Object.keys(remoteNotebooks).length > 0;
-    const localHasData = Object.keys(local).length > 0;
-
-    let final;
-    if (remoteHasData) {
-      final = mergeNotebooks(remoteNotebooks, local);
-    } else if (localHasData) {
-      final = local;
-    } else {
-      final = {};
-    }
-
-    const needsUpload = !remoteHasData && localHasData
-      || (remoteHasData && !notebooksEqual(final, remoteNotebooks));
+    const final = mergeNotebooks(local, remoteNotebooks);
+    const needsUpload = !notebooksEqual(final, remoteNotebooks);
 
     if (needsUpload) {
       const result = await putServerNotebooks(token, final);
