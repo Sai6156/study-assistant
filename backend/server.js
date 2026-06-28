@@ -6,11 +6,12 @@ import crypto from "crypto";
 import { registerUser, authenticateUser } from "./users.js";
 import { loadNotebooks, saveNotebooks } from "./notebooks.js";
 import { usingRedis } from "./persist.js";
+import { initSchema, checkPostgres, usingPostgres } from "./db.js";
 
 dotenv.config();
 
 const app = express();
-app.use(express.json({ limit: "6mb" }));
+app.use(express.json({ limit: "25mb" }));
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "*";
 app.use(cors({
@@ -21,7 +22,7 @@ app.use(cors({
 }));
 app.options("*", cors());
 
-// ─── Auth (durable registry via Redis on Render, file fallback locally) ────────
+// ─── Auth (Postgres primary; Redis/file fallback for local dev) ────────────────
 // Users must sign up before they can sign in. Passwords are hashed with scrypt.
 // Notebooks sync to the same durable store so accounts survive redeploys.
 const JWT_SECRET = process.env.JWT_SECRET || "study-assistant-secret-2026";
@@ -219,7 +220,16 @@ function buildSourcesBlock(sources) {
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
-app.get("/api/health", (_req, res) => res.json({ status: "ok", model: DEFAULT_MODEL, time: Date.now(), redis: usingRedis() }));
+app.get("/api/health", async (_req, res) => {
+  const postgres = usingPostgres() ? await checkPostgres() : false;
+  res.json({
+    status: "ok",
+    model: DEFAULT_MODEL,
+    time: Date.now(),
+    postgres,
+    redis: usingRedis(),
+  });
+});
 
 // ─── Chat (with SSE streaming support) ───────────────────────────────────────
 
@@ -917,8 +927,16 @@ export default app;
 // Only bind to a port when running locally (not in Vercel serverless)
 if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Study Assistant backend listening on port ${PORT}`);
-    console.log(`Model: ${DEFAULT_MODEL}`);
-  });
+  initSchema()
+    .then((ok) => {
+      if (ok) console.log("PostgreSQL schema ready");
+      else console.log("Running without PostgreSQL (file/redis fallback)");
+    })
+    .catch((e) => console.error("Schema init failed:", e.message))
+    .finally(() => {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Study Assistant backend listening on port ${PORT}`);
+        console.log(`Model: ${DEFAULT_MODEL}`);
+      });
+    });
 }

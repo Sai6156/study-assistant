@@ -1,12 +1,11 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
-import { fileURLToPath } from "url";
+import { usingPostgres, query } from "./db.js";
 import { readJson, writeJson } from "./persist.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, "data");
-const USERS_FILE = path.join(DATA_DIR, "users.json");
+const USERS_FILE = path.join(__dirname, "data", "users.json");
 const USERS_KEY = "sa:users";
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
@@ -23,45 +22,82 @@ function verifyPassword(password, salt, hash) {
   }
 }
 
-async function loadStore() {
+function rowToUser(row) {
+  return {
+    uid: row.uid,
+    email: row.email,
+    username: row.username,
+    salt: row.salt,
+    passwordHash: row.password_hash,
+    createdAt: Number(row.created_at),
+  };
+}
+
+async function loadStoreFile() {
   return readJson(USERS_KEY, { users: {} }, USERS_FILE);
 }
 
-async function saveStore(store) {
+async function saveStoreFile(store) {
   await writeJson(USERS_KEY, store, USERS_FILE);
 }
 
 export async function findUserByEmail(email) {
   const key = email.toLowerCase().trim();
-  const store = await loadStore();
+  if (usingPostgres()) {
+    const { rows } = await query("SELECT * FROM sa_users WHERE email = $1", [key]);
+    return rows[0] ? rowToUser(rows[0]) : null;
+  }
+  const store = await loadStoreFile();
   return store.users[key] || null;
 }
 
 export async function registerUser({ email, password, username, uid }) {
   const key = email.toLowerCase().trim();
-  const store = await loadStore();
-  if (store.users[key]) return { error: "Email already registered", status: 409 };
+  const existing = await findUserByEmail(key);
+  if (existing) return { error: "Email already registered", status: 409 };
 
   const { salt, hash } = hashPassword(password);
-  store.users[key] = {
+  const createdAt = Date.now();
+  const user = {
     uid,
     email: key,
     username: username.trim(),
     salt,
     passwordHash: hash,
-    createdAt: Date.now(),
+    createdAt,
   };
-  await saveStore(store);
-  return { user: store.users[key] };
+
+  if (usingPostgres()) {
+    await query(
+      `INSERT INTO sa_users (email, uid, username, salt, password_hash, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [key, uid, user.username, salt, hash, createdAt]
+    );
+    return { user };
+  }
+
+  const store = await loadStoreFile();
+  store.users[key] = user;
+  await saveStoreFile(store);
+  return { user };
 }
 
 export async function authenticateUser(email, password) {
   const key = email.toLowerCase().trim();
-  const store = await loadStore();
-  const record = store.users[key];
+  const record = await findUserByEmail(key);
   if (!record) return { error: "No account found with this email. Please sign up first.", status: 401 };
   if (!verifyPassword(password, record.salt, record.passwordHash)) {
     return { error: "Incorrect password", status: 401 };
   }
   return { user: record };
+}
+
+export async function upsertUserFromMigration(user) {
+  if (!usingPostgres()) return;
+  await query(
+    `INSERT INTO sa_users (email, uid, username, salt, password_hash, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     ON CONFLICT (email) DO NOTHING`,
+    [user.email, user.uid, user.username, user.salt, user.passwordHash, user.createdAt || Date.now()]
+  );
 }

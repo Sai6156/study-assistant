@@ -110,6 +110,31 @@ window.VSA_SYNC = (function () {
     if (nb) nb.updatedAt = Date.now();
   }
 
+  function prepareNotebooksForSave(notebooks) {
+    const out = JSON.parse(JSON.stringify(notebooks || {}));
+    for (const nb of Object.values(out)) {
+      if (nb.studioOutputs?.length > 5) nb.studioOutputs = nb.studioOutputs.slice(0, 5);
+      if (nb.studioOutputs) {
+        nb.studioOutputs = nb.studioOutputs.map((o) => {
+          if (o.type === "audio" && o.data) {
+            const { data, ...rest } = o;
+            return rest;
+          }
+          return o;
+        });
+      }
+    }
+    return out;
+  }
+
+  function syncErrorMessage(err, status) {
+    const code = status || 0;
+    if (code === 413) return "Source too large to sync — try a smaller PDF";
+    if (code === 503 || code === 502) return "Server waking up — retry in a few seconds";
+    if (code === 401) return "Session expired — please sign in again";
+    return err?.message || "Sync failed — check your connection";
+  }
+
   function apiBase() {
     return window.VSA_CONFIG?.API_BASE ?? (
       (location.hostname === "localhost" || location.hostname === "127.0.0.1")
@@ -118,33 +143,66 @@ window.VSA_SYNC = (function () {
     );
   }
 
-  async function fetchServerNotebooks(token) {
-    try {
-      const res = await fetch(`${apiBase()}/api/notebooks`, {
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return { notebooks: {}, updatedAt: 0 };
-      const data = await res.json();
-      return {
-        notebooks: data?.notebooks && typeof data.notebooks === "object" ? data.notebooks : {},
-        updatedAt: Number(data.updatedAt) || 0,
-      };
-    } catch {
-      return { notebooks: {}, updatedAt: 0 };
-    }
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
-  async function putServerNotebooks(token, notebooks) {
-    const res = await fetch(`${apiBase()}/api/notebooks`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ notebooks }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Sync failed (${res.status})`);
+  async function fetchServerNotebooks(token, retries = 2) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(`${apiBase()}/api/notebooks`, {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 503 || res.status === 502) {
+          if (i < retries) { await sleep(3000); continue; }
+        }
+        if (!res.ok) return { notebooks: {}, updatedAt: 0 };
+        const data = await res.json();
+        return {
+          notebooks: data?.notebooks && typeof data.notebooks === "object" ? data.notebooks : {},
+          updatedAt: Number(data.updatedAt) || 0,
+        };
+      } catch {
+        if (i < retries) { await sleep(3000); continue; }
+      }
     }
-    return res.json();
+    return { notebooks: {}, updatedAt: 0 };
+  }
+
+  async function putServerNotebooks(token, notebooks, retries = 2) {
+    const payload = prepareNotebooksForSave(notebooks);
+    let lastStatus = 0;
+    let lastErr = null;
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(`${apiBase()}/api/notebooks`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ notebooks: payload }),
+        });
+        lastStatus = res.status;
+        if ((res.status === 503 || res.status === 502) && i < retries) {
+          await sleep(3000);
+          continue;
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          lastErr = new Error(err.error || `Sync failed (${res.status})`);
+          lastErr.status = res.status;
+          throw lastErr;
+        }
+        return res.json();
+      } catch (e) {
+        lastErr = e;
+        if (i < retries && (e.status === 503 || e.status === 502 || !e.status)) {
+          await sleep(3000);
+          continue;
+        }
+        e.status = e.status || lastStatus;
+        throw e;
+      }
+    }
+    throw lastErr || new Error("Sync failed");
   }
 
   async function syncAccountNotebooks({ token, uid, storageKey }) {
@@ -156,17 +214,23 @@ window.VSA_SYNC = (function () {
     } catch {}
 
     const remote = await fetchServerNotebooks(token);
-    const merged = mergeNotebooks(local, remote.notebooks);
-    localStorage.setItem(key, JSON.stringify(merged));
+    const remoteEmpty = !remote.notebooks || Object.keys(remote.notebooks).length === 0;
+    const localHasData = local && Object.keys(local).length > 0;
+    const merged = mergeNotebooks(local, remote.notebooks || {});
 
-    const needsUpload = !notebooksEqual(merged, remote.notebooks) || Object.keys(local).length !== Object.keys(remote.notebooks).length;
-    if (needsUpload || Object.keys(merged).length > 0) {
+    const localOnlyIds = Object.keys(local).filter((id) => !remote.notebooks?.[id]);
+    const needsUpload = remoteEmpty && localHasData
+      || localOnlyIds.length > 0
+      || !notebooksEqual(merged, remote.notebooks || {});
+
+    if (needsUpload) {
       const result = await putServerNotebooks(token, merged);
-      if (result.notebooks && typeof result.notebooks === "object") {
-        localStorage.setItem(key, JSON.stringify(result.notebooks));
-        return { notebooks: result.notebooks, updatedAt: result.updatedAt };
-      }
+      const final = result.notebooks && typeof result.notebooks === "object" ? result.notebooks : merged;
+      localStorage.setItem(key, JSON.stringify(final));
+      return { notebooks: final, updatedAt: result.updatedAt || Date.now() };
     }
+
+    localStorage.setItem(key, JSON.stringify(merged));
     return { notebooks: merged, updatedAt: remote.updatedAt };
   }
 
@@ -175,6 +239,8 @@ window.VSA_SYNC = (function () {
     notebooksEqual,
     notebookRichness,
     touchNotebook,
+    prepareNotebooksForSave,
+    syncErrorMessage,
     fetchServerNotebooks,
     putServerNotebooks,
     syncAccountNotebooks,

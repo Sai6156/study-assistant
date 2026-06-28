@@ -1,5 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import { usingPostgres, query } from "./db.js";
 import { readJson, writeJson } from "./persist.js";
 import { mergeNotebooks } from "./merge-notebooks.js";
 
@@ -15,7 +16,7 @@ function notebookKey(uid) {
   return `sa:notebooks:${uid}`;
 }
 
-export async function loadNotebooks(uid) {
+async function loadNotebooksFile(uid) {
   const file = notebookPath(uid);
   const parsed = await readJson(notebookKey(uid), null, file);
   if (!parsed) return { notebooks: {}, updatedAt: 0 };
@@ -31,6 +32,25 @@ export async function loadNotebooks(uid) {
   return { notebooks: {}, updatedAt: 0 };
 }
 
+async function saveNotebooksFile(uid, payload) {
+  await writeJson(notebookKey(uid), payload, notebookPath(uid));
+}
+
+export async function loadNotebooks(uid) {
+  if (usingPostgres()) {
+    const { rows } = await query(
+      "SELECT notebooks, updated_at FROM sa_notebooks WHERE uid = $1",
+      [uid]
+    );
+    if (!rows.length) return { notebooks: {}, updatedAt: 0 };
+    return {
+      notebooks: rows[0].notebooks || {},
+      updatedAt: Number(rows[0].updated_at) || 0,
+    };
+  }
+  return loadNotebooksFile(uid);
+}
+
 export async function saveNotebooks(uid, notebooks) {
   const existing = await loadNotebooks(uid);
   const merged = mergeNotebooks(existing.notebooks, notebooks);
@@ -38,6 +58,32 @@ export async function saveNotebooks(uid, notebooks) {
     notebooks: merged,
     updatedAt: Date.now(),
   };
-  await writeJson(notebookKey(uid), payload, notebookPath(uid));
+
+  if (usingPostgres()) {
+    await query(
+      `INSERT INTO sa_notebooks (uid, notebooks, updated_at)
+       VALUES ($1, $2::jsonb, $3)
+       ON CONFLICT (uid) DO UPDATE
+       SET notebooks = EXCLUDED.notebooks, updated_at = EXCLUDED.updated_at`,
+      [uid, JSON.stringify(merged), payload.updatedAt]
+    );
+    return payload;
+  }
+
+  await saveNotebooksFile(uid, payload);
   return payload;
+}
+
+export async function upsertNotebooksFromMigration(uid, notebooks, updatedAt) {
+  if (!usingPostgres()) return;
+  const existing = await loadNotebooks(uid);
+  const merged = mergeNotebooks(existing.notebooks, notebooks);
+  const ts = updatedAt || Date.now();
+  await query(
+    `INSERT INTO sa_notebooks (uid, notebooks, updated_at)
+     VALUES ($1, $2::jsonb, $3)
+     ON CONFLICT (uid) DO UPDATE
+     SET notebooks = $2::jsonb, updated_at = GREATEST(sa_notebooks.updated_at, $3)`,
+    [uid, JSON.stringify(merged), ts]
+  );
 }

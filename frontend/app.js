@@ -81,8 +81,8 @@ const state = {
   currentAudio:     null,
 };
 
-// ─── Storage helpers (server merge via sync.js) ───────────────────
-const { mergeNotebooks, notebooksEqual, touchNotebook } = window.VSA_SYNC;
+// ─── Storage helpers (Postgres via API; localStorage is cache only) ─────────
+const { mergeNotebooks, notebooksEqual, touchNotebook, syncErrorMessage } = window.VSA_SYNC;
 
 let _serverSyncTimer = null;
 let _notebooksUpdatedAt = 0;
@@ -96,12 +96,12 @@ function touchActiveNotebook() {
 
 function saveNotebooks() {
   touchActiveNotebook();
+  for (const nb of Object.values(state.notebooks)) {
+    if (nb.studioOutputs?.length > 5) nb.studioOutputs = nb.studioOutputs.slice(0, 5);
+  }
   try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(state.notebooks)); }
   catch (e) {
-    for (const nb of Object.values(state.notebooks)) {
-      if (nb.studioOutputs?.length > 5) nb.studioOutputs = nb.studioOutputs.slice(0, 5);
-    }
-    try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(state.notebooks)); } catch {}
+    try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(window.VSA_SYNC.prepareNotebooksForSave(state.notebooks))); } catch {}
   }
   scheduleServerNotebookSync();
 }
@@ -129,7 +129,7 @@ async function syncNotebooksToServer() {
         localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(data.notebooks));
       }
     } catch (e) {
-      toast("Sync failed — changes may not appear on other devices");
+      toast(syncErrorMessage(e, e.status));
       console.error("Notebook sync failed:", e);
     } finally {
       _syncInFlight = null;
@@ -141,10 +141,11 @@ async function syncNotebooksToServer() {
 function flushServerNotebookSync() {
   clearTimeout(_serverSyncTimer);
   if (!authToken || !currentUser?.uid) return;
+  const payload = JSON.stringify({ notebooks: window.VSA_SYNC.prepareNotebooksForSave(state.notebooks) });
   fetch(`${API}/api/notebooks`, {
     method: "PUT",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ notebooks: state.notebooks }),
+    body: payload,
     keepalive: true,
   }).catch(() => {});
 }
@@ -218,20 +219,19 @@ function applyNotebookState(saved) {
 
 async function initNotebooks() {
   setStatus("Syncing notebooks…");
-  const local = loadNotebooks() || {};
-  const remote = await fetchServerNotebooks();
-  const remoteNotebooks = remote?.notebooks || {};
-
-  let merged = mergeNotebooks(local, remoteNotebooks);
+  let local = loadNotebooks() || {};
 
   const migrated = migrateOldData();
   if (migrated?.all) {
-    merged = mergeNotebooks(merged, migrated.all);
-  } else if (migrated && Object.keys(merged).length === 0) {
+    local = mergeNotebooks(local, migrated.all);
+  } else if (migrated && Object.keys(local).length === 0) {
     const id = "nb_" + makeId();
-    const n = { ...migrated, id, studioOutputs: migrated.studioOutputs || [] };
-    merged = { [id]: n };
+    local = { [id]: { ...migrated, id, studioOutputs: migrated.studioOutputs || [], updatedAt: Date.now() } };
   }
+
+  const remote = await fetchServerNotebooks();
+  const remoteNotebooks = remote?.notebooks || {};
+  let merged = mergeNotebooks(local, remoteNotebooks);
 
   if (Object.keys(merged).length === 0) {
     const id = "nb_" + makeId();
@@ -242,11 +242,16 @@ async function initNotebooks() {
     };
   }
 
+  const remoteEmpty = Object.keys(remoteNotebooks).length === 0;
+  const localOnlyIds = Object.keys(local).filter((id) => !remoteNotebooks[id]);
+  const needsUpload = (remoteEmpty && Object.keys(local).length > 0)
+    || localOnlyIds.length > 0
+    || !notebooksEqual(merged, remoteNotebooks);
+
   state.notebooks = merged;
   localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(merged));
   _notebooksUpdatedAt = remote.updatedAt || 0;
 
-  const needsUpload = !notebooksEqual(merged, remoteNotebooks);
   if (needsUpload) {
     try {
       const data = await window.VSA_SYNC.putServerNotebooks(authToken, merged);
@@ -257,7 +262,7 @@ async function initNotebooks() {
       }
       toast("Notebooks synced");
     } catch (e) {
-      toast("Sync failed — open the profile with your sources and refresh");
+      toast(syncErrorMessage(e, e.status));
       console.error("Initial notebook sync failed:", e);
     }
   }
