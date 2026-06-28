@@ -3,10 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { registerUser, authenticateUser } from "./users.js";
+import { registerUser, authenticateUser, importLegacyUserIfValid } from "./users.js";
 import { loadNotebooks, saveNotebooks } from "./notebooks.js";
 import { usingRedis } from "./persist.js";
 import { initSchema, checkPostgres, usingPostgres } from "./db.js";
+import { runLegacyMigration } from "./legacy-migrate.js";
 
 dotenv.config();
 
@@ -95,6 +96,10 @@ app.post("/api/auth/signin", async (req, res) => {
     }
 
     let result = await authenticateUser(email, password);
+    if (result.error?.includes("No account found")) {
+      const legacy = await importLegacyUserIfValid(email, password);
+      if (legacy) result = { user: legacy };
+    }
     if (result.error?.includes("No account found")) {
       const uid = "u_" + deriveUid(email, password);
       const { notebooks } = await loadNotebooks(uid);
@@ -928,9 +933,15 @@ export default app;
 if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 3000;
   initSchema()
-    .then((ok) => {
-      if (ok) console.log("PostgreSQL schema ready");
-      else console.log("Running without PostgreSQL (file/redis fallback)");
+    .then(async (ok) => {
+      if (ok) {
+        console.log("PostgreSQL schema ready");
+        try { await runLegacyMigration(); } catch (e) {
+          console.error("Legacy migration failed:", e.message);
+        }
+      } else {
+        console.log("Running without PostgreSQL (file/redis fallback)");
+      }
     })
     .catch((e) => console.error("Schema init failed:", e.message))
     .finally(() => {

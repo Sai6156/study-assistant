@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { usingPostgres, query } from "./db.js";
-import { readJson, writeJson } from "./persist.js";
+import { readJson } from "./persist.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -37,8 +37,21 @@ async function loadStoreFile() {
   return readJson(USERS_KEY, { users: {} }, USERS_FILE);
 }
 
-async function saveStoreFile(store) {
-  await writeJson(USERS_KEY, store, USERS_FILE);
+/** If user exists in Redis/file but not Postgres, verify password and import. */
+export async function importLegacyUserIfValid(email, password) {
+  const key = email.toLowerCase().trim();
+  if (!usingPostgres()) return null;
+
+  const inPg = await findUserByEmail(key);
+  if (inPg) return null;
+
+  const store = await loadStoreFile();
+  const record = store.users?.[key];
+  if (!record) return null;
+  if (!verifyPassword(password, record.salt, record.passwordHash)) return null;
+
+  await upsertUserFromMigration(record);
+  return record;
 }
 
 export async function findUserByEmail(email) {
@@ -78,7 +91,8 @@ export async function registerUser({ email, password, username, uid }) {
 
   const store = await loadStoreFile();
   store.users[key] = user;
-  await saveStoreFile(store);
+  const { writeJson } = await import("./persist.js");
+  await writeJson(USERS_KEY, store, USERS_FILE);
   return { user };
 }
 
@@ -97,7 +111,11 @@ export async function upsertUserFromMigration(user) {
   await query(
     `INSERT INTO sa_users (email, uid, username, salt, password_hash, created_at)
      VALUES ($1, $2, $3, $4, $5, $6)
-     ON CONFLICT (email) DO NOTHING`,
+     ON CONFLICT (email) DO UPDATE SET
+       uid = EXCLUDED.uid,
+       username = EXCLUDED.username,
+       salt = EXCLUDED.salt,
+       password_hash = EXCLUDED.password_hash`,
     [user.email, user.uid, user.username, user.salt, user.passwordHash, user.createdAt || Date.now()]
   );
 }
