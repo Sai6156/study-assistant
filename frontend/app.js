@@ -82,6 +82,9 @@ const state = {
 };
 
 // ─── Storage helpers ──────────────────────────────────────────────
+let _serverSyncTimer = null;
+let _notebooksUpdatedAt = 0;
+
 function saveNotebooks() {
   try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(state.notebooks)); }
   catch (e) {
@@ -90,6 +93,44 @@ function saveNotebooks() {
     }
     try { localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(state.notebooks)); } catch {}
   }
+  scheduleServerNotebookSync();
+}
+
+async function fetchServerNotebooks() {
+  try {
+    const res = await fetch(`${API}/api/notebooks`, { headers: getAuthHeaders() });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.notebooks || typeof data.notebooks !== "object") return null;
+    return {
+      notebooks: data.notebooks,
+      updatedAt: Number(data.updatedAt) || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function scheduleServerNotebookSync() {
+  if (!authToken || !currentUser?.uid) return;
+  clearTimeout(_serverSyncTimer);
+  _serverSyncTimer = setTimeout(syncNotebooksToServer, 700);
+}
+
+async function syncNotebooksToServer() {
+  if (!authToken || !currentUser?.uid) return;
+  try {
+    const res = await fetch(`${API}/api/notebooks`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ notebooks: state.notebooks }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      _notebooksUpdatedAt = Number(data.updatedAt) || Date.now();
+      localStorage.setItem(`${NB_STORAGE_KEY}_updatedAt`, String(_notebooksUpdatedAt));
+    }
+  } catch {}
 }
 function loadNotebooks() {
   try { const r = localStorage.getItem(NB_STORAGE_KEY); if (r) return JSON.parse(r); }
@@ -106,12 +147,32 @@ function nbNotes()    { return nb()?.notes          || []; }
 function nbOutputs()  { return nb()?.studioOutputs  || []; }
 function activeChat() { return nbChats().find(c => c.id === state.activeChat); }
 
-// ─── Migrate old data ─────────────────────────────────────────────
+// ─── Migrate old data (scoped per user — never steal another account's keys) ──
 function migrateOldData() {
+  if (!currentUser?.uid) return null;
+  const legacyKey = `sa_legacy_migrated_${currentUser.uid}`;
+  if (localStorage.getItem(legacyKey)) return null;
+
   const oldSources = localStorage.getItem("sa_sources");
   const oldChats   = localStorage.getItem("sa_chats");
   const oldNotes   = localStorage.getItem("sa_notes");
+  const legacyNotebooks = localStorage.getItem("sa_notebooks_v2");
+  if (!oldSources && !oldChats && !oldNotes && !legacyNotebooks) return null;
+
+  localStorage.setItem(legacyKey, "1");
+
+  if (legacyNotebooks) {
+    try {
+      const parsed = JSON.parse(legacyNotebooks);
+      if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+        ["sa_sources", "sa_chats", "sa_notes", "sa_notebooks_v2"].forEach(k => localStorage.removeItem(k));
+        return { all: parsed };
+      }
+    } catch {}
+  }
+
   if (!oldSources && !oldChats && !oldNotes) return null;
+  ["sa_sources", "sa_chats", "sa_notes", "sa_notebooks_v2"].forEach(k => localStorage.removeItem(k));
   return {
     id: "default", name: "My Notebook", emoji: "📓",
     sources: JSON.parse(oldSources || "[]"),
@@ -121,27 +182,14 @@ function migrateOldData() {
   };
 }
 
-function initNotebooks() {
-  const saved = loadNotebooks();
-  if (saved && Object.keys(saved).length > 0) {
-    state.notebooks = saved;
-    // Ensure each notebook has studioOutputs
-    for (const n of Object.values(state.notebooks)) {
-      if (!n.studioOutputs) n.studioOutputs = [];
-    }
-    state.activeNotebookId = localStorage.getItem(activeNbKey()) || Object.keys(saved)[0];
-    if (!state.notebooks[state.activeNotebookId]) {
-      state.activeNotebookId = Object.keys(saved)[0];
-    }
-  } else {
-    const migrated = migrateOldData();
-    const id = "nb_" + makeId();
-    const n  = migrated || { id, name: "My Notebook", emoji: "📓", sources: [], chats: [], notes: [], studioOutputs: [] };
-    n.id = id;
-    state.notebooks[id] = n;
-    state.activeNotebookId = id;
-    saveNotebooks();
-    if (migrated) ["sa_sources","sa_chats","sa_notes"].forEach(k => localStorage.removeItem(k));
+function applyNotebookState(saved) {
+  state.notebooks = saved;
+  for (const n of Object.values(state.notebooks)) {
+    if (!n.studioOutputs) n.studioOutputs = [];
+  }
+  state.activeNotebookId = localStorage.getItem(activeNbKey()) || Object.keys(saved)[0];
+  if (!state.notebooks[state.activeNotebookId]) {
+    state.activeNotebookId = Object.keys(saved)[0];
   }
   const chats = nbChats();
   if (!chats.length) createNewChat();
@@ -149,6 +197,48 @@ function initNotebooks() {
     const last = localStorage.getItem(activeChatKey(state.activeNotebookId));
     state.activeChat = (last && chats.find(c => c.id === last)) ? last : chats[chats.length - 1].id;
   }
+}
+
+async function initNotebooks() {
+  const local = loadNotebooks();
+  const localUpdatedAt = Number(localStorage.getItem(`${NB_STORAGE_KEY}_updatedAt`)) || 0;
+  const remote = await fetchServerNotebooks();
+
+  let saved = null;
+  if (remote && Object.keys(remote.notebooks).length > 0) {
+    if (!local || Object.keys(local).length === 0 || remote.updatedAt >= localUpdatedAt) {
+      saved = remote.notebooks;
+      _notebooksUpdatedAt = remote.updatedAt;
+      localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(saved));
+      localStorage.setItem(`${NB_STORAGE_KEY}_updatedAt`, String(remote.updatedAt));
+    } else {
+      saved = local;
+      scheduleServerNotebookSync();
+    }
+  } else if (local && Object.keys(local).length > 0) {
+    saved = local;
+    scheduleServerNotebookSync();
+  }
+
+  if (saved && Object.keys(saved).length > 0) {
+    applyNotebookState(saved);
+    return;
+  }
+
+  const migrated = migrateOldData();
+  if (migrated?.all) {
+    applyNotebookState(migrated.all);
+    saveNotebooks();
+    return;
+  }
+
+  const id = "nb_" + makeId();
+  const n  = migrated || { id, name: "My Notebook", emoji: "📓", sources: [], chats: [], notes: [], studioOutputs: [] };
+  n.id = id;
+  state.notebooks[id] = n;
+  state.activeNotebookId = id;
+  saveNotebooks();
+  applyNotebookState(state.notebooks);
 }
 
 function createNotebook(name = "New Notebook") {
@@ -2845,10 +2935,9 @@ function init() {
     if (hl) hl.href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css";
   }
   $("speed-val").textContent = parseFloat($("speed").value) + "×";
-  initNotebooks();
   initSpeechRecognition();
   initEvents();
-  render();
+  initNotebooks().then(() => render()).catch(() => render());
 }
 
 document.addEventListener("DOMContentLoaded", init);

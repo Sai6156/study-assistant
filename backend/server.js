@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { registerUser, authenticateUser } from "./users.js";
+import { loadNotebooks, saveNotebooks } from "./notebooks.js";
 
 dotenv.config();
 
@@ -45,6 +46,15 @@ function verifyToken(req) {
   const h = req.headers.authorization || "";
   if (!h.startsWith("Bearer ")) return null;
   try { return jwt.verify(h.slice(7), JWT_SECRET); } catch { return null; }
+}
+
+function requireAuth(req, res) {
+  const payload = verifyToken(req);
+  if (!payload?.uid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+  return payload;
 }
 
 // ─── Auth endpoints ────────────────────────────────────────────────────────────
@@ -96,6 +106,29 @@ app.get("/api/auth/me", (req, res) => {
   if (!payload) return res.status(401).json({ error: "Unauthorized" });
   const { uid, email, username, role } = payload;
   res.json({ uid, email, username, role });
+});
+
+// Notebooks — server sync so the same account works across browsers/profiles
+app.get("/api/notebooks", (req, res) => {
+  try {
+    const user = requireAuth(req, res);
+    if (!user) return;
+    const { notebooks, updatedAt } = loadNotebooks(user.uid);
+    res.json({ notebooks, updatedAt });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put("/api/notebooks", (req, res) => {
+  try {
+    const user = requireAuth(req, res);
+    if (!user) return;
+    const { notebooks } = req.body || {};
+    if (!notebooks || typeof notebooks !== "object") {
+      return res.status(400).json({ error: "notebooks object is required" });
+    }
+    const saved = saveNotebooks(user.uid, notebooks);
+    res.json({ ok: true, updatedAt: saved.updatedAt });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 const API_KEY = process.env.OPENROUTER_API_KEY;
