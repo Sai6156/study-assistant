@@ -101,16 +101,15 @@ app.post("/api/auth/signin", async (req, res) => {
       if (legacy) result = { user: legacy };
     }
     if (result.error?.includes("No account found")) {
-      const uid = "u_" + deriveUid(email, password);
-      const { notebooks } = await loadNotebooks(uid);
-      if (Object.keys(notebooks).length > 0) {
-        const recovered = await registerUser({
-          email,
-          password,
-          username: email.split("@")[0],
-          uid,
-        });
-        if (!recovered.error) result = recovered;
+      const key = email.toLowerCase().trim();
+      const uid = "u_" + deriveUid(key, password);
+      const username = key.split("@")[0];
+      const registered = await registerUser({ email: key, password, username, uid });
+      if (!registered.error) {
+        result = registered;
+      } else {
+        // Legacy stateless sign-in: same email+password always yields the same uid
+        result = { user: { uid, email: key, username } };
       }
     }
     if (result.error) return res.status(result.status).json({ error: result.error });

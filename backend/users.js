@@ -67,7 +67,10 @@ export async function findUserByEmail(email) {
 export async function registerUser({ email, password, username, uid }) {
   const key = email.toLowerCase().trim();
   const existing = await findUserByEmail(key);
-  if (existing) return { error: "Email already registered", status: 409 };
+  if (existing) {
+    if (existing.uid === uid) return { user: existing };
+    return { error: "Email already registered", status: 409 };
+  }
 
   const { salt, hash } = hashPassword(password);
   const createdAt = Date.now();

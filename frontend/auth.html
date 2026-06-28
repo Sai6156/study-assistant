@@ -548,8 +548,8 @@ async function doSignIn() {
     const data = await res.json();
     if (!res.ok) {
       const msg = data.error || 'Sign in failed';
-      if (msg.includes('No account found')) {
-        showErr('signin-error', 'No account found. Use the Sign Up tab to create your account (same email works).');
+      if (msg.includes('Incorrect password')) {
+        showErr('signin-error', 'Incorrect password. Use the same password as your other Chrome profile.');
       } else {
         showErr('signin-error', msg);
       }
