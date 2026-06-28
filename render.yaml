@@ -1,4 +1,10 @@
 services:
+  - type: keyvalue
+    name: study-assistant-kv
+    region: singapore
+    plan: free
+    maxmemoryPolicy: noeviction
+
   - type: web
     name: voice-study-assistant-api
     runtime: node
@@ -15,6 +21,11 @@ services:
         value: deepseek/deepseek-v3.2
       - key: ALLOWED_ORIGIN
         value: https://voice-study-assistant.vercel.app
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: study-assistant-kv
+          property: connectionString
       - key: OPENROUTER_API_KEY
         sync: false
       - key: JWT_SECRET

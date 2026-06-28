@@ -530,7 +530,15 @@ async function doSignIn() {
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (!res.ok) { showErr('signin-error', data.error || 'Sign in failed'); return; }
+    if (!res.ok) {
+      const msg = data.error || 'Sign in failed';
+      if (msg.includes('No account found')) {
+        showErr('signin-error', 'No account found. Use the Sign Up tab to create your account (same email works).');
+      } else {
+        showErr('signin-error', msg);
+      }
+      return;
+    }
     saveAuth(data.token, data.user);
     showOk('signin-success', `Welcome back, ${data.user.username}! Redirecting…`);
     setTimeout(() => location.replace('index.html'), 900);

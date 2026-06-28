@@ -20,9 +20,9 @@ app.use(cors({
 }));
 app.options("*", cors());
 
-// ─── Auth (file-backed user registry) ─────────────────────────────────────────
+// ─── Auth (durable registry via Redis on Render, file fallback locally) ────────
 // Users must sign up before they can sign in. Passwords are hashed with scrypt.
-// User data in notebooks/chats stays in browser localStorage, keyed per uid.
+// Notebooks sync to the same durable store so accounts survive redeploys.
 const JWT_SECRET = process.env.JWT_SECRET || "study-assistant-secret-2026";
 const UID_PEPPER  = process.env.UID_PEPPER  || "sa-uid-pepper-2026";
 
@@ -60,7 +60,7 @@ function requireAuth(req, res) {
 // ─── Auth endpoints ────────────────────────────────────────────────────────────
 
 // Sign up — creates a new account (email must be unique)
-app.post("/api/auth/signup", (req, res) => {
+app.post("/api/auth/signup", async (req, res) => {
   try {
     const { email, password, username } = req.body || {};
     if (!email || !password || !username)
@@ -69,7 +69,7 @@ app.post("/api/auth/signup", (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
 
     const uid = "u_" + deriveUid(email, password);
-    const result = registerUser({ email, password, username, uid });
+    const result = await registerUser({ email, password, username, uid });
     if (result.error) return res.status(result.status).json({ error: result.error });
 
     const user = { uid: result.user.uid, email: result.user.email, username: result.user.username, role: "student" };
@@ -77,8 +77,8 @@ app.post("/api/auth/signup", (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Sign in — only registered users with correct password
-app.post("/api/auth/signin", (req, res) => {
+// Sign in — registered users; auto-recover account if notebooks exist for credentials
+app.post("/api/auth/signin", async (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password)
@@ -92,7 +92,20 @@ app.post("/api/auth/signin", (req, res) => {
       return res.json({ token: signToken(user), user });
     }
 
-    const result = authenticateUser(email, password);
+    let result = await authenticateUser(email, password);
+    if (result.error?.includes("No account found")) {
+      const uid = "u_" + deriveUid(email, password);
+      const { notebooks } = await loadNotebooks(uid);
+      if (Object.keys(notebooks).length > 0) {
+        const recovered = await registerUser({
+          email,
+          password,
+          username: email.split("@")[0],
+          uid,
+        });
+        if (!recovered.error) result = recovered;
+      }
+    }
     if (result.error) return res.status(result.status).json({ error: result.error });
 
     const user = { uid: result.user.uid, email: result.user.email, username: result.user.username, role: "student" };
@@ -109,16 +122,16 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 // Notebooks — server sync so the same account works across browsers/profiles
-app.get("/api/notebooks", (req, res) => {
+app.get("/api/notebooks", async (req, res) => {
   try {
     const user = requireAuth(req, res);
     if (!user) return;
-    const { notebooks, updatedAt } = loadNotebooks(user.uid);
+    const { notebooks, updatedAt } = await loadNotebooks(user.uid);
     res.json({ notebooks, updatedAt });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put("/api/notebooks", (req, res) => {
+app.put("/api/notebooks", async (req, res) => {
   try {
     const user = requireAuth(req, res);
     if (!user) return;
@@ -126,7 +139,7 @@ app.put("/api/notebooks", (req, res) => {
     if (!notebooks || typeof notebooks !== "object") {
       return res.status(400).json({ error: "notebooks object is required" });
     }
-    const saved = saveNotebooks(user.uid, notebooks);
+    const saved = await saveNotebooks(user.uid, notebooks);
     res.json({ ok: true, updatedAt: saved.updatedAt });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

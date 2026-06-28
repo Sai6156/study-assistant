@@ -2,29 +2,12 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
+import { readJson, writeJson } from "./persist.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-function loadStore() {
-  ensureDataDir();
-  if (!fs.existsSync(USERS_FILE)) return { users: {} };
-  try {
-    return JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
-  } catch {
-    return { users: {} };
-  }
-}
-
-function saveStore(store) {
-  ensureDataDir();
-  fs.writeFileSync(USERS_FILE, JSON.stringify(store, null, 2), "utf8");
-}
+const USERS_KEY = "sa:users";
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
   const hash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -40,14 +23,23 @@ function verifyPassword(password, salt, hash) {
   }
 }
 
-export function findUserByEmail(email) {
-  const key = email.toLowerCase().trim();
-  return loadStore().users[key] || null;
+async function loadStore() {
+  return readJson(USERS_KEY, { users: {} }, USERS_FILE);
 }
 
-export function registerUser({ email, password, username, uid }) {
+async function saveStore(store) {
+  await writeJson(USERS_KEY, store, USERS_FILE);
+}
+
+export async function findUserByEmail(email) {
   const key = email.toLowerCase().trim();
-  const store = loadStore();
+  const store = await loadStore();
+  return store.users[key] || null;
+}
+
+export async function registerUser({ email, password, username, uid }) {
+  const key = email.toLowerCase().trim();
+  const store = await loadStore();
   if (store.users[key]) return { error: "Email already registered", status: 409 };
 
   const { salt, hash } = hashPassword(password);
@@ -59,13 +51,14 @@ export function registerUser({ email, password, username, uid }) {
     passwordHash: hash,
     createdAt: Date.now(),
   };
-  saveStore(store);
+  await saveStore(store);
   return { user: store.users[key] };
 }
 
-export function authenticateUser(email, password) {
+export async function authenticateUser(email, password) {
   const key = email.toLowerCase().trim();
-  const record = loadStore().users[key];
+  const store = await loadStore();
+  const record = store.users[key];
   if (!record) return { error: "No account found with this email. Please sign up first.", status: 401 };
   if (!verifyPassword(password, record.salt, record.passwordHash)) {
     return { error: "Incorrect password", status: 401 };
