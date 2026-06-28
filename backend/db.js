@@ -28,6 +28,14 @@ export async function query(text, params = []) {
   return p.query(text, params);
 }
 
+async function runWipeIfRequested() {
+  const email = process.env.WIPE_ACCOUNT_EMAIL?.toLowerCase().trim();
+  if (!email) return;
+  await query("DELETE FROM sa_users WHERE email = $1", [email]);
+  await query("DELETE FROM sa_notebooks WHERE uid NOT IN (SELECT uid FROM sa_users)");
+  console.log("Wiped account and orphan notebooks for:", email);
+}
+
 export async function initSchema() {
   if (!usingPostgres()) {
     console.warn("DATABASE_URL not set — Postgres schema skipped");
@@ -46,11 +54,16 @@ export async function initSchema() {
     CREATE TABLE IF NOT EXISTS sa_notebooks (
       uid         TEXT PRIMARY KEY,
       notebooks   JSONB NOT NULL DEFAULT '{}',
-      updated_at  BIGINT NOT NULL DEFAULT 0
+      updated_at  BIGINT NOT NULL DEFAULT 0,
+      owner_email TEXT
     );
 
     CREATE INDEX IF NOT EXISTS sa_notebooks_updated_idx ON sa_notebooks(updated_at);
   `);
+  await query(`
+    ALTER TABLE sa_notebooks ADD COLUMN IF NOT EXISTS owner_email TEXT;
+  `);
+  await runWipeIfRequested();
   return true;
 }
 

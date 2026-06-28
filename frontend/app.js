@@ -47,6 +47,7 @@ function activeChatKey(nbId) {
 function signOut() {
   if (!confirm("Sign out of Study Assistant?")) return;
   localStorage.removeItem("sa_auth");
+  if (NB_STORAGE_KEY) localStorage.removeItem(NB_STORAGE_KEY);
   location.replace("auth.html");
 }
 
@@ -219,8 +220,11 @@ function applyNotebookState(saved) {
 
 async function initNotebooks() {
   setStatus("Syncing notebooks…");
-  let local = loadNotebooks() || {};
+  const remote = await fetchServerNotebooks();
+  const remoteNotebooks = remote?.notebooks || {};
+  const remoteHasData = Object.keys(remoteNotebooks).length > 0;
 
+  let local = loadNotebooks() || {};
   const migrated = migrateOldData();
   if (migrated?.all) {
     local = mergeNotebooks(local, migrated.all);
@@ -229,9 +233,14 @@ async function initNotebooks() {
     local = { [id]: { ...migrated, id, studioOutputs: migrated.studioOutputs || [], updatedAt: Date.now() } };
   }
 
-  const remote = await fetchServerNotebooks();
-  const remoteNotebooks = remote?.notebooks || {};
-  let merged = mergeNotebooks(local, remoteNotebooks);
+  let merged;
+  if (remoteHasData) {
+    merged = mergeNotebooks(remoteNotebooks, local);
+  } else if (Object.keys(local).length > 0) {
+    merged = local;
+  } else {
+    merged = {};
+  }
 
   if (Object.keys(merged).length === 0) {
     const id = "nb_" + makeId();
@@ -242,15 +251,12 @@ async function initNotebooks() {
     };
   }
 
-  const remoteEmpty = Object.keys(remoteNotebooks).length === 0;
-  const localOnlyIds = Object.keys(local).filter((id) => !remoteNotebooks[id]);
-  const needsUpload = (remoteEmpty && Object.keys(local).length > 0)
-    || localOnlyIds.length > 0
-    || !notebooksEqual(merged, remoteNotebooks);
-
   state.notebooks = merged;
   localStorage.setItem(NB_STORAGE_KEY, JSON.stringify(merged));
   _notebooksUpdatedAt = remote.updatedAt || 0;
+
+  const needsUpload = !remoteHasData && Object.keys(local).length > 0
+    || (remoteHasData && !notebooksEqual(merged, remoteNotebooks));
 
   if (needsUpload) {
     try {
@@ -265,6 +271,8 @@ async function initNotebooks() {
       toast(syncErrorMessage(e, e.status));
       console.error("Initial notebook sync failed:", e);
     }
+  } else if (remoteHasData) {
+    toast("Notebooks synced");
   }
 
   applyNotebookState(state.notebooks);

@@ -2,12 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-import { registerUser, authenticateUser, importLegacyUserIfValid } from "./users.js";
+import { registerUser, authenticateUser, findUserByEmail, generateUid } from "./users.js";
 import { loadNotebooks, saveNotebooks } from "./notebooks.js";
 import { usingRedis } from "./persist.js";
 import { initSchema, checkPostgres, usingPostgres } from "./db.js";
-import { runLegacyMigration } from "./legacy-migrate.js";
 
 dotenv.config();
 
@@ -23,23 +21,13 @@ app.use(cors({
 }));
 app.options("*", cors());
 
-// ─── Auth (Postgres primary; Redis/file fallback for local dev) ────────────────
-// Users must sign up before they can sign in. Passwords are hashed with scrypt.
-// Notebooks sync to the same durable store so accounts survive redeploys.
+// ─── Auth (Postgres — single source of truth for accounts + notebooks) ───────
 const JWT_SECRET = process.env.JWT_SECRET || "study-assistant-secret-2026";
-const UID_PEPPER  = process.env.UID_PEPPER  || "sa-uid-pepper-2026";
 
 // Mentor credentials (hardcoded — no DB needed)
 const MENTOR_USERNAME = "ss6156";
 const MENTOR_PASSWORD  = "saishashank";
 const MENTOR_UID       = "mentor_ss6156";
-
-function deriveUid(email, password) {
-  return crypto.createHmac("sha256", UID_PEPPER)
-    .update(`${email.toLowerCase().trim()}::${password}`)
-    .digest("hex")
-    .slice(0, 28);
-}
 
 function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "365d" });
@@ -51,10 +39,16 @@ function verifyToken(req) {
   try { return jwt.verify(h.slice(7), JWT_SECRET); } catch { return null; }
 }
 
-function requireAuth(req, res) {
+async function requireAuth(req, res) {
   const payload = verifyToken(req);
-  if (!payload?.uid) {
+  if (!payload?.uid || !payload?.email) {
     res.status(401).json({ error: "Unauthorized" });
+    return null;
+  }
+  if (payload.role === "mentor" && payload.uid === MENTOR_UID) return payload;
+  const dbUser = await findUserByEmail(payload.email);
+  if (!dbUser || dbUser.uid !== payload.uid) {
+    res.status(401).json({ error: "Session invalid — please sign in again" });
     return null;
   }
   return payload;
@@ -71,7 +65,7 @@ app.post("/api/auth/signup", async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ error: "Password must be at least 6 characters" });
 
-    const uid = "u_" + deriveUid(email, password);
+    const uid = generateUid();
     const result = await registerUser({ email, password, username, uid });
     if (result.error) return res.status(result.status).json({ error: result.error });
 
@@ -80,7 +74,7 @@ app.post("/api/auth/signup", async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Sign in — registered users; auto-recover account if notebooks exist for credentials
+// Sign in — registered users only (password verified against Postgres)
 app.post("/api/auth/signin", async (req, res) => {
   try {
     const { email, password } = req.body || {};
@@ -95,23 +89,7 @@ app.post("/api/auth/signin", async (req, res) => {
       return res.json({ token: signToken(user), user });
     }
 
-    let result = await authenticateUser(email, password);
-    if (result.error?.includes("No account found")) {
-      const legacy = await importLegacyUserIfValid(email, password);
-      if (legacy) result = { user: legacy };
-    }
-    if (result.error?.includes("No account found")) {
-      const key = email.toLowerCase().trim();
-      const uid = "u_" + deriveUid(key, password);
-      const username = key.split("@")[0];
-      const registered = await registerUser({ email: key, password, username, uid });
-      if (!registered.error) {
-        result = registered;
-      } else {
-        // Legacy stateless sign-in: same email+password always yields the same uid
-        result = { user: { uid, email: key, username } };
-      }
-    }
+    const result = await authenticateUser(email, password);
     if (result.error) return res.status(result.status).json({ error: result.error });
 
     const user = { uid: result.user.uid, email: result.user.email, username: result.user.username, role: "student" };
@@ -130,7 +108,7 @@ app.get("/api/auth/me", (req, res) => {
 // Notebooks — server sync so the same account works across browsers/profiles
 app.get("/api/notebooks", async (req, res) => {
   try {
-    const user = requireAuth(req, res);
+    const user = await requireAuth(req, res);
     if (!user) return;
     const { notebooks, updatedAt } = await loadNotebooks(user.uid);
     res.json({ notebooks, updatedAt });
@@ -139,13 +117,13 @@ app.get("/api/notebooks", async (req, res) => {
 
 app.put("/api/notebooks", async (req, res) => {
   try {
-    const user = requireAuth(req, res);
+    const user = await requireAuth(req, res);
     if (!user) return;
     const { notebooks } = req.body || {};
     if (!notebooks || typeof notebooks !== "object") {
       return res.status(400).json({ error: "notebooks object is required" });
     }
-    const saved = await saveNotebooks(user.uid, notebooks);
+    const saved = await saveNotebooks(user.uid, notebooks, user.email);
     res.json({ ok: true, updatedAt: saved.updatedAt, notebooks: saved.notebooks });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -932,15 +910,9 @@ export default app;
 if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 3000;
   initSchema()
-    .then(async (ok) => {
-      if (ok) {
-        console.log("PostgreSQL schema ready");
-        try { await runLegacyMigration(); } catch (e) {
-          console.error("Legacy migration failed:", e.message);
-        }
-      } else {
-        console.log("Running without PostgreSQL (file/redis fallback)");
-      }
+    .then((ok) => {
+      if (ok) console.log("PostgreSQL schema ready");
+      else console.log("Running without PostgreSQL (file fallback for local dev)");
     })
     .catch((e) => console.error("Schema init failed:", e.message))
     .finally(() => {

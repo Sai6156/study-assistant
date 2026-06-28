@@ -547,12 +547,7 @@ async function doSignIn() {
     });
     const data = await res.json();
     if (!res.ok) {
-      const msg = data.error || 'Sign in failed';
-      if (msg.includes('Incorrect password')) {
-        showErr('signin-error', 'Incorrect password. Use the same password as your other Chrome profile.');
-      } else {
-        showErr('signin-error', msg);
-      }
+      showErr('signin-error', data.error || 'Sign in failed');
       return;
     }
     await redirectAfterAuth(data.token, data.user, 'signin-success', `Welcome back, ${data.user.username}!`);

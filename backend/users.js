@@ -37,21 +37,8 @@ async function loadStoreFile() {
   return readJson(USERS_KEY, { users: {} }, USERS_FILE);
 }
 
-/** If user exists in Redis/file but not Postgres, verify password and import. */
-export async function importLegacyUserIfValid(email, password) {
-  const key = email.toLowerCase().trim();
-  if (!usingPostgres()) return null;
-
-  const inPg = await findUserByEmail(key);
-  if (inPg) return null;
-
-  const store = await loadStoreFile();
-  const record = store.users?.[key];
-  if (!record) return null;
-  if (!verifyPassword(password, record.salt, record.passwordHash)) return null;
-
-  await upsertUserFromMigration(record);
-  return record;
+export function generateUid() {
+  return "u_" + crypto.randomUUID().replace(/-/g, "").slice(0, 28);
 }
 
 export async function findUserByEmail(email) {
@@ -67,10 +54,7 @@ export async function findUserByEmail(email) {
 export async function registerUser({ email, password, username, uid }) {
   const key = email.toLowerCase().trim();
   const existing = await findUserByEmail(key);
-  if (existing) {
-    if (existing.uid === uid) return { user: existing };
-    return { error: "Email already registered", status: 409 };
-  }
+  if (existing) return { error: "Email already registered", status: 409 };
 
   const { salt, hash } = hashPassword(password);
   const createdAt = Date.now();
@@ -107,6 +91,30 @@ export async function authenticateUser(email, password) {
     return { error: "Incorrect password", status: 401 };
   }
   return { user: record };
+}
+
+export async function updatePassword(email, oldPassword, newPassword) {
+  const key = email.toLowerCase().trim();
+  const auth = await authenticateUser(key, oldPassword);
+  if (auth.error) return auth;
+  if (!newPassword || newPassword.length < 6) {
+    return { error: "New password must be at least 6 characters", status: 400 };
+  }
+  const { salt, hash } = hashPassword(newPassword);
+  if (usingPostgres()) {
+    await query(
+      `UPDATE sa_users SET salt = $1, password_hash = $2 WHERE email = $3`,
+      [salt, hash, key]
+    );
+  } else {
+    const store = await loadStoreFile();
+    const user = store.users[key];
+    user.salt = salt;
+    user.passwordHash = hash;
+    const { writeJson } = await import("./persist.js");
+    await writeJson(USERS_KEY, store, USERS_FILE);
+  }
+  return { ok: true };
 }
 
 export async function upsertUserFromMigration(user) {

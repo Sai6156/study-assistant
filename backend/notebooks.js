@@ -51,7 +51,7 @@ export async function loadNotebooks(uid) {
   return loadNotebooksFile(uid);
 }
 
-export async function saveNotebooks(uid, notebooks) {
+export async function saveNotebooks(uid, notebooks, ownerEmail = null) {
   const existing = await loadNotebooks(uid);
   const merged = mergeNotebooks(existing.notebooks, notebooks);
   const payload = {
@@ -61,11 +61,13 @@ export async function saveNotebooks(uid, notebooks) {
 
   if (usingPostgres()) {
     await query(
-      `INSERT INTO sa_notebooks (uid, notebooks, updated_at)
-       VALUES ($1, $2::jsonb, $3)
+      `INSERT INTO sa_notebooks (uid, notebooks, updated_at, owner_email)
+       VALUES ($1, $2::jsonb, $3, $4)
        ON CONFLICT (uid) DO UPDATE
-       SET notebooks = EXCLUDED.notebooks, updated_at = EXCLUDED.updated_at`,
-      [uid, JSON.stringify(merged), payload.updatedAt]
+       SET notebooks = EXCLUDED.notebooks,
+           updated_at = EXCLUDED.updated_at,
+           owner_email = COALESCE(EXCLUDED.owner_email, sa_notebooks.owner_email)`,
+      [uid, JSON.stringify(merged), payload.updatedAt, ownerEmail]
     );
     return payload;
   }

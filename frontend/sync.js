@@ -214,24 +214,29 @@ window.VSA_SYNC = (function () {
     } catch {}
 
     const remote = await fetchServerNotebooks(token);
-    const remoteEmpty = !remote.notebooks || Object.keys(remote.notebooks).length === 0;
-    const localHasData = local && Object.keys(local).length > 0;
-    const merged = mergeNotebooks(local, remote.notebooks || {});
+    const remoteNotebooks = remote.notebooks || {};
+    const remoteHasData = Object.keys(remoteNotebooks).length > 0;
+    const localHasData = Object.keys(local).length > 0;
 
-    const localOnlyIds = Object.keys(local).filter((id) => !remote.notebooks?.[id]);
-    const needsUpload = remoteEmpty && localHasData
-      || localOnlyIds.length > 0
-      || !notebooksEqual(merged, remote.notebooks || {});
-
-    if (needsUpload) {
-      const result = await putServerNotebooks(token, merged);
-      const final = result.notebooks && typeof result.notebooks === "object" ? result.notebooks : merged;
-      localStorage.setItem(key, JSON.stringify(final));
-      return { notebooks: final, updatedAt: result.updatedAt || Date.now() };
+    let final;
+    if (remoteHasData) {
+      final = mergeNotebooks(remoteNotebooks, local);
+    } else if (localHasData) {
+      final = local;
+    } else {
+      final = {};
     }
 
-    localStorage.setItem(key, JSON.stringify(merged));
-    return { notebooks: merged, updatedAt: remote.updatedAt };
+    const needsUpload = !remoteHasData && localHasData
+      || (remoteHasData && !notebooksEqual(final, remoteNotebooks));
+
+    if (needsUpload) {
+      const result = await putServerNotebooks(token, final);
+      final = result.notebooks && typeof result.notebooks === "object" ? result.notebooks : final;
+    }
+
+    localStorage.setItem(key, JSON.stringify(final));
+    return { notebooks: final, updatedAt: remote.updatedAt || Date.now() };
   }
 
   return {
