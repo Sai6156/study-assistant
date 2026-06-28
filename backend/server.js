@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { registerUser, authenticateUser } from "./users.js";
 
 dotenv.config();
 
@@ -18,11 +19,9 @@ app.use(cors({
 }));
 app.options("*", cors());
 
-// ─── Stateless Auth ────────────────────────────────────────────────────────────
-// No database needed. User identity is derived deterministically from
-// email + password via HMAC-SHA256. The uid is stable forever — same
-// credentials always produce the same uid, so localStorage data is always found.
-// Username is embedded in the JWT and localStorage, not stored server-side.
+// ─── Auth (file-backed user registry) ─────────────────────────────────────────
+// Users must sign up before they can sign in. Passwords are hashed with scrypt.
+// User data in notebooks/chats stays in browser localStorage, keyed per uid.
 const JWT_SECRET = process.env.JWT_SECRET || "study-assistant-secret-2026";
 const UID_PEPPER  = process.env.UID_PEPPER  || "sa-uid-pepper-2026";
 
@@ -50,7 +49,7 @@ function verifyToken(req) {
 
 // ─── Auth endpoints ────────────────────────────────────────────────────────────
 
-// Sign up — first-time registration
+// Sign up — creates a new account (email must be unique)
 app.post("/api/auth/signup", (req, res) => {
   try {
     const { email, password, username } = req.body || {};
@@ -59,37 +58,35 @@ app.post("/api/auth/signup", (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ error: "Password must be at least 6 characters" });
 
-    const uid   = "u_" + deriveUid(email, password);
-    const user  = { uid, email: email.toLowerCase().trim(), username, role: "student" };
-    const token = signToken(user);
-    res.json({ token, user });
+    const uid = "u_" + deriveUid(email, password);
+    const result = registerUser({ email, password, username, uid });
+    if (result.error) return res.status(result.status).json({ error: result.error });
+
+    const user = { uid: result.user.uid, email: result.user.email, username: result.user.username, role: "student" };
+    res.json({ token: signToken(user), user });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Sign in — rederives uid from credentials; no DB lookup needed
+// Sign in — only registered users with correct password
 app.post("/api/auth/signin", (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password)
       return res.status(400).json({ error: "email and password are required" });
 
-    // Mentor shortcut
+    // Mentor shortcut (hardcoded admin)
     if (email.trim() === MENTOR_USERNAME || email.trim().toLowerCase() === "mentor@studyassistant.app") {
       if (password !== MENTOR_PASSWORD)
         return res.status(401).json({ error: "Incorrect mentor password" });
-      const user  = { uid: MENTOR_UID, email: "mentor@studyassistant.app", username: MENTOR_USERNAME, role: "mentor" };
+      const user = { uid: MENTOR_UID, email: "mentor@studyassistant.app", username: MENTOR_USERNAME, role: "mentor" };
       return res.json({ token: signToken(user), user });
     }
 
-    // Regular user: derive uid from credentials and sign a fresh token.
-    // The uid is stable — same email+password always yields the same uid,
-    // so the client's localStorage data (keyed by uid) is always found.
-    const uid   = "u_" + deriveUid(email, password);
-    const user  = { uid, email: email.toLowerCase().trim(), username: email.split("@")[0], role: "student" };
-    const token = signToken(user);
-    // Note: username from signup is embedded in the client's stored JWT;
-    // here we return a fresh token so the client can update it.
-    res.json({ token, user });
+    const result = authenticateUser(email, password);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+
+    const user = { uid: result.user.uid, email: result.user.email, username: result.user.username, role: "student" };
+    res.json({ token: signToken(user), user });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

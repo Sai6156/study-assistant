@@ -516,14 +516,6 @@ function showOk(id, msg) {
 
 function saveAuth(token, user) {
   localStorage.setItem('sa_auth', JSON.stringify({ token, user }));
-  // Persist username separately so sign-in can restore it (stateless server)
-  if (user.uid && user.username) localStorage.setItem(`sa_username_${user.uid}`, user.username);
-  // Scope existing notebooks to this user if they have none yet
-  const nbKey = `sa_notebooks_v2_${user.uid}`;
-  if (!localStorage.getItem(nbKey)) {
-    const legacy = localStorage.getItem('sa_notebooks_v2');
-    if (legacy) localStorage.setItem(nbKey, legacy);
-  }
 }
 
 async function doSignIn() {
@@ -539,9 +531,6 @@ async function doSignIn() {
     });
     const data = await res.json();
     if (!res.ok) { showErr('signin-error', data.error || 'Sign in failed'); return; }
-    // Preserve username from previously saved auth if server doesn't have it
-    const prevAuth = localStorage.getItem(`sa_username_${data.user.uid}`);
-    if (prevAuth) data.user.username = prevAuth;
     saveAuth(data.token, data.user);
     showOk('signin-success', `Welcome back, ${data.user.username}! Redirecting…`);
     setTimeout(() => location.replace('index.html'), 900);

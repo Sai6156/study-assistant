@@ -36,6 +36,14 @@ function getAuthHeaders() {
   return { "Content-Type": "application/json", "Authorization": `Bearer ${authToken}` };
 }
 
+function activeNbKey() {
+  return currentUser ? `sa_active_nb_${currentUser.uid}` : "sa_active_nb";
+}
+
+function activeChatKey(nbId) {
+  return currentUser ? `sa_active_chat_${currentUser.uid}_${nbId}` : `sa_active_chat_${nbId}`;
+}
+
 function signOut() {
   if (!confirm("Sign out of Study Assistant?")) return;
   localStorage.removeItem("sa_auth");
@@ -121,7 +129,7 @@ function initNotebooks() {
     for (const n of Object.values(state.notebooks)) {
       if (!n.studioOutputs) n.studioOutputs = [];
     }
-    state.activeNotebookId = localStorage.getItem("sa_active_nb") || Object.keys(saved)[0];
+    state.activeNotebookId = localStorage.getItem(activeNbKey()) || Object.keys(saved)[0];
     if (!state.notebooks[state.activeNotebookId]) {
       state.activeNotebookId = Object.keys(saved)[0];
     }
@@ -138,7 +146,7 @@ function initNotebooks() {
   const chats = nbChats();
   if (!chats.length) createNewChat();
   else {
-    const last = localStorage.getItem("sa_active_chat_" + state.activeNotebookId);
+    const last = localStorage.getItem(activeChatKey(state.activeNotebookId));
     state.activeChat = (last && chats.find(c => c.id === last)) ? last : chats[chats.length - 1].id;
   }
 }
@@ -153,11 +161,11 @@ function createNotebook(name = "New Notebook") {
 function switchNotebook(id) {
   if (!state.notebooks[id]) return;
   state.activeNotebookId = id;
-  localStorage.setItem("sa_active_nb", id);
+  localStorage.setItem(activeNbKey(), id);
   const chats = nb().chats;
   if (!chats.length) createNewChat();
   else {
-    const last = localStorage.getItem("sa_active_chat_" + id);
+    const last = localStorage.getItem(activeChatKey(id));
     state.activeChat = (last && chats.find(c => c.id === last)) ? last : chats[chats.length - 1].id;
   }
   render();
@@ -181,8 +189,8 @@ function renameNotebook(id, name) {
 
 function saveNb() {
   saveNotebooks();
-  localStorage.setItem("sa_active_nb", state.activeNotebookId);
-  if (state.activeChat) localStorage.setItem("sa_active_chat_" + state.activeNotebookId, state.activeChat);
+  localStorage.setItem(activeNbKey(), state.activeNotebookId);
+  if (state.activeChat) localStorage.setItem(activeChatKey(state.activeNotebookId), state.activeChat);
 }
 
 // ─── Studio Output persistence ────────────────────────────────────
@@ -244,7 +252,11 @@ function renderStudioOutputs() {
 }
 
 function reopenStudioOutput(out) {
+  if (state.currentMindMap) { state.currentMindMap.destroy(); state.currentMindMap = null; }
+  $("studio-output-overlay").classList.remove("hidden");
   const { type, title, data } = out;
+  if (type === "flashcards") fcKnown = new Set();
+  if (type === "quiz") { quizQuestions = []; quizIdx = 0; quizScore = 0; }
   if      (type === "slides")     renderSlides(data);
   else if (type === "mindmap")    renderMindMap(data);
   else if (type === "flashcards") renderFlashcards(data.cards);
@@ -296,7 +308,7 @@ function createNewChat(name) {
 function switchChat(id) {
   if (!nbChats().find(c => c.id === id)) return;
   state.activeChat = id;
-  localStorage.setItem("sa_active_chat_" + state.activeNotebookId, id);
+  localStorage.setItem(activeChatKey(state.activeNotebookId), id);
   renderThread();
   renderChatTabs();
 }
@@ -1748,6 +1760,7 @@ async function studioMindmap() {
 }
 
 function renderMindMap(data) {
+  $("studio-output-overlay").classList.remove("hidden");
   const container = el("div", { class: "mindmap-container", style: "width:100%;height:600px" });
   $("sop-body").innerHTML = "";
   $("sop-body").style.padding = "0";
@@ -1826,6 +1839,7 @@ function renderFlashcards(cards) {
 }
 
 function showFlashcard() {
+  $("studio-output-overlay").classList.remove("hidden");
   if (fcIdx >= fcCards.length) {
     openSOP("Flashcards", `<div class="quiz-result"><div class="quiz-result-score">✓</div><div class="quiz-result-label">${fcKnown.size} mastered, ${fcCards.length - fcKnown.size} remaining</div><button class="quiz-btn primary" id="fc-continue">Continue</button></div>`, []);
     $("fc-continue")?.addEventListener("click", () => renderFlashcards(fcCards));
@@ -1905,6 +1919,8 @@ function renderQuiz(questions) {
 }
 
 function showQuizQuestion() {
+  $("studio-output-overlay").classList.remove("hidden");
+  $("sop-title").textContent = "Quiz";
   if (quizIdx >= quizQuestions.length) {
     const pct = Math.round((quizScore/quizQuestions.length)*100);
     $("sop-body").innerHTML = `
